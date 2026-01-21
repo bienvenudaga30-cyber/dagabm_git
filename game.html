@@ -4,51 +4,931 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>DAGA - Quiz SQL Multijoueur</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
         body {
             background: linear-gradient(135deg, #1a2a6c, #3a7bd5);
-            color: white;
-            text-align: center;
-            padding: 50px;
-            font-family: Arial, sans-serif;
+            color: #fff;
+            min-height: 100vh;
+            padding: 20px;
         }
-        h1 {
-            font-size: 3rem;
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        header {
+            text-align: center;
+            padding: 20px 0;
             margin-bottom: 30px;
         }
-        .container {
-            max-width: 800px;
-            margin: 0 auto;
-            background: rgba(255,255,255,0.1);
-            padding: 30px;
-            border-radius: 20px;
+        
+        h1 {
+            font-size: 2.8rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
         }
+        
+        .subtitle {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            margin-bottom: 20px;
+        }
+        
+        .game-container {
+            display: grid;
+            grid-template-columns: 1fr 350px;
+            gap: 25px;
+        }
+        
+        @media (max-width: 900px) {
+            .game-container {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .main-panel {
+            background-color: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+        
+        .sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+        }
+        
+        .panel {
+            background-color: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+        }
+        
+        .panel h2 {
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .game-state {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+        
+        .question-counter {
+            font-size: 1.3rem;
+            background-color: rgba(0, 0, 0, 0.2);
+            padding: 8px 15px;
+            border-radius: 50px;
+            display: inline-block;
+            margin-bottom: 15px;
+        }
+        
+        .timer {
+            font-size: 2.2rem;
+            font-weight: bold;
+            color: #ffcc00;
+            text-shadow: 0 0 10px rgba(255, 204, 0, 0.5);
+            margin-bottom: 10px;
+        }
+        
+        .question-container {
+            margin-bottom: 30px;
+        }
+        
+        .question-text {
+            font-size: 1.4rem;
+            line-height: 1.5;
+            margin-bottom: 25px;
+            padding: 20px;
+            background-color: rgba(0, 0, 0, 0.2);
+            border-radius: 10px;
+        }
+        
+        .code-snippet {
+            background-color: #2d3748;
+            color: #e2e8f0;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            margin: 15px 0;
+            overflow-x: auto;
+            font-size: 1.1rem;
+        }
+        
+        .answer-options {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 15px;
+        }
+        
+        .answer-option {
+            background-color: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            padding: 18px 20px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: left;
+        }
+        
+        .answer-option:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+            transform: translateY(-3px);
+        }
+        
+        .answer-option.selected {
+            background-color: rgba(52, 152, 219, 0.3);
+            border-color: #3498db;
+        }
+        
+        .answer-option.correct {
+            background-color: rgba(46, 204, 113, 0.3);
+            border-color: #2ecc71;
+        }
+        
+        .answer-option.incorrect {
+            background-color: rgba(231, 76, 60, 0.3);
+            border-color: #e74c3c;
+        }
+        
+        .game-controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
         button {
-            background: #2ecc71;
+            background-color: #3498db;
             color: white;
             border: none;
-            padding: 15px 30px;
-            font-size: 1.2rem;
-            border-radius: 10px;
+            border-radius: 8px;
+            padding: 14px 25px;
+            font-size: 1.1rem;
             cursor: pointer;
-            margin: 20px;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 600;
+        }
+        
+        button:hover {
+            background-color: #2980b9;
+            transform: translateY(-2px);
+        }
+        
+        button:disabled {
+            background-color: #7f8c8d;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        button#startGame {
+            background-color: #2ecc71;
+        }
+        
+        button#startGame:hover {
+            background-color: #27ae60;
+        }
+        
+        .players-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            max-height: 300px;
+            overflow-y: auto;
+            padding-right: 5px;
+        }
+        
+        .player {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 15px;
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+        }
+        
+        .player.me {
+            background-color: rgba(52, 152, 219, 0.3);
+            border: 1px solid #3498db;
+        }
+        
+        .player-name {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .player-score {
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+        
+        .player-avatar {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            background-color: #3498db;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+        
+        .player-position {
+            font-weight: bold;
+            color: #ffcc00;
+        }
+        
+        .results-container {
+            text-align: center;
+        }
+        
+        .final-score {
+            font-size: 3.5rem;
+            font-weight: bold;
+            color: #ffcc00;
+            margin: 20px 0;
+            text-shadow: 0 0 15px rgba(255, 204, 0, 0.7);
+        }
+        
+        .score-breakdown {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin: 25px 0;
+        }
+        
+        .score-item {
+            background-color: rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            border-radius: 10px;
+        }
+        
+        .score-value {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #2ecc71;
+        }
+        
+        .player-setup input {
+            width: 100%;
+            padding: 14px;
+            margin-bottom: 15px;
+            border-radius: 8px;
+            border: none;
+            background-color: rgba(255, 255, 255, 0.9);
+            font-size: 1rem;
+        }
+        
+        .avatar-selection {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            margin: 15px 0;
+        }
+        
+        .avatar-option {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .avatar-option:hover {
+            transform: scale(1.1);
+        }
+        
+        .avatar-option.selected {
+            border: 3px solid #ffcc00;
+            transform: scale(1.1);
+        }
+        
+        .hidden {
+            display: none !important;
+        }
+        
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2rem;
+            }
+            
+            .main-panel, .panel {
+                padding: 15px;
+            }
+            
+            .question-text {
+                font-size: 1.2rem;
+            }
+            
+            .game-controls {
+                flex-direction: column;
+            }
+            
+            button {
+                width: 100%;
+                justify-content: center;
+            }
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>🎮 DAGA - Quiz SQL Multijoueur</h1>
-        <p>Jeu en développement - Version de test</p>
-        <p>Affrontez d'autres joueurs sur des questions SQL</p>
-        <button onclick="startGame()">Démarrer une partie</button>
+        <header>
+            <h1><i class="fas fa-database"></i> DAGA - Quiz SQL Multijoueur</h1>
+            <p class="subtitle">Affrontez d'autres joueurs en répondant à des questions SQL. Score basé sur la rapidité et l'exactitude.</p>
+        </header>
+        
+        <div class="game-container">
+            <div class="main-panel">
+                <div class="game-state">
+                    <div class="question-counter">Question <span id="currentQuestion">1</span> / <span id="totalQuestions">10</span></div>
+                    <div class="timer" id="timer">30s</div>
+                    <div id="gameStatus">En attente du début de la partie...</div>
+                </div>
+                
+                <div class="question-container" id="questionContainer">
+                    <div class="question-text" id="questionText">
+                        Le jeu va commencer dès qu'un administrateur aura lancé la partie. Préparez-vous à répondre à des questions sur SQL !
+                    </div>
+                    <div class="code-snippet hidden" id="codeSnippet"></div>
+                </div>
+                
+                <div class="answer-options" id="answerOptions"></div>
+                
+                <div class="game-controls">
+                    <button id="startGame">
+                        <i class="fas fa-play"></i> Démarrer la partie
+                    </button>
+                    <button id="submitAnswer" disabled>
+                        <i class="fas fa-paper-plane"></i> Soumettre la réponse
+                    </button>
+                    <button id="nextQuestion" disabled>
+                        <i class="fas fa-forward"></i> Question suivante
+                    </button>
+                </div>
+            </div>
+            
+            <div class="sidebar">
+                <div class="panel">
+                    <h2><i class="fas fa-trophy"></i> Classement en temps réel</h2>
+                    <div class="players-list" id="playersList">
+                        <div class="player me">
+                            <div class="player-name">
+                                <div class="player-position">1</div>
+                                <div class="player-avatar" style="background-color: #3498db;">VO</div>
+                                <div>Vous</div>
+                            </div>
+                            <div class="player-score">0 pts</div>
+                        </div>
+                        <div class="player">
+                            <div class="player-name">
+                                <div class="player-position">2</div>
+                                <div class="player-avatar" style="background-color: #e74c3c;">JD</div>
+                                <div>Joueur 2</div>
+                            </div>
+                            <div class="player-score">0 pts</div>
+                        </div>
+                        <div class="player">
+                            <div class="player-name">
+                                <div class="player-position">3</div>
+                                <div class="player-avatar" style="background-color: #2ecc71;">MJ</div>
+                                <div>Joueur 3</div>
+                            </div>
+                            <div class="player-score">0 pts</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="panel player-setup" id="playerSetup">
+                    <h2><i class="fas fa-user"></i> Configuration du joueur</h2>
+                    <input type="text" id="playerName" placeholder="Votre nom" maxlength="15" value="Joueur 1">
+                    <p>Choisissez votre avatar :</p>
+                    <div class="avatar-selection">
+                        <div class="avatar-option selected" style="background-color: #3498db;" data-color="#3498db">VO</div>
+                        <div class="avatar-option" style="background-color: #e74c3c;" data-color="#e74c3c">JD</div>
+                        <div class="avatar-option" style="background-color: #2ecc71;" data-color="#2ecc71">MJ</div>
+                        <div class="avatar-option" style="background-color: #9b59b6;" data-color="#9b59b6">AL</div>
+                    </div>
+                    <button id="savePlayerConfig">
+                        <i class="fas fa-save"></i> Enregistrer
+                    </button>
+                </div>
+                
+                <div class="panel results-container hidden" id="resultsPanel">
+                    <h2><i class="fas fa-chart-line"></i> Vos résultats</h2>
+                    <div class="final-score" id="finalScore">0 pts</div>
+                    <div class="score-breakdown">
+                        <div class="score-item">
+                            <div>Questions correctes</div>
+                            <div class="score-value" id="correctAnswers">0/10</div>
+                        </div>
+                        <div class="score-item">
+                            <div>Temps moyen</div>
+                            <div class="score-value" id="averageTime">0s</div>
+                        </div>
+                        <div class="score-item">
+                            <div>Score rapidité</div>
+                            <div class="score-value" id="speedScore">0</div>
+                        </div>
+                        <div class="score-item">
+                            <div>Position finale</div>
+                            <div class="score-value" id="finalPosition">1er</div>
+                        </div>
+                    </div>
+                    <button id="playAgain">
+                        <i class="fas fa-redo"></i> Rejouer
+                    </button>
+                </div>
+            </div>
+        </div>
     </div>
 
     <script>
-        function startGame() {
-            alert("Le jeu DAGA démarre bientôt !\n\nFonctionnalités :\n• Multijoueur en temps réel\n• Questions SQL\n• Score basé sur la rapidité");
+        // Données du jeu
+        const gameData = {
+            playerName: "Joueur 1",
+            playerAvatar: { text: "VO", color: "#3498db" },
+            players: [
+                { id: 1, name: "Vous", score: 0, avatar: { text: "VO", color: "#3498db" }, isCurrentPlayer: true },
+                { id: 2, name: "Joueur 2", score: 0, avatar: { text: "JD", color: "#e74c3c" }, isCurrentPlayer: false },
+                { id: 3, name: "Joueur 3", score: 0, avatar: { text: "MJ", color: "#2ecc71" }, isCurrentPlayer: false }
+            ],
+            currentQuestionIndex: 0,
+            totalQuestions: 10,
+            timePerQuestion: 30,
+            timer: null,
+            timeLeft: 30,
+            gameStarted: false,
+            selectedAnswer: null,
+            playerAnswers: [],
+            questions: [
+                {
+                    question: "Quelle commande SQL est utilisée pour récupérer des données d'une base de données?",
+                    code: null,
+                    options: ["GET", "SELECT", "EXTRACT", "QUERY"],
+                    correctAnswer: 1
+                },
+                {
+                    question: "Quelle clause SQL est utilisée pour filtrer les résultats?",
+                    code: null,
+                    options: ["FILTER", "WHERE", "HAVING", "CONDITION"],
+                    correctAnswer: 1
+                },
+                {
+                    question: "Quelle est la sortie de cette requête?",
+                    code: "SELECT COUNT(*) FROM employees WHERE department = 'Sales';",
+                    options: ["Le nombre total d'employés", "Le nombre d'employés dans le département Sales", "La somme des salaires du département Sales", "Une erreur car il manque GROUP BY"],
+                    correctAnswer: 1
+                },
+                {
+                    question: "Quelle commande est utilisée pour mettre à jour des données dans une table SQL?",
+                    code: null,
+                    options: ["MODIFY", "UPDATE", "CHANGE", "ALTER"],
+                    correctAnswer: 1
+                },
+                {
+                    question: "Quelle jointure retourne tous les enregistrements de la table gauche et les enregistrements correspondants de la table droite?",
+                    code: null,
+                    options: ["INNER JOIN", "LEFT JOIN", "RIGHT JOIN", "FULL JOIN"],
+                    correctAnswer: 1
+                },
+                {
+                    question: "Quelle fonction agrège des valeurs numériques?",
+                    code: null,
+                    options: ["COUNT()", "AVG()", "MAX()", "Toutes ces réponses"],
+                    correctAnswer: 3
+                },
+                {
+                    question: "Que fait cette requête?",
+                    code: "DELETE FROM customers WHERE last_purchase < '2023-01-01';",
+                    options: ["Supprime tous les clients", "Supprime les clients sans achat depuis 2023", "Met à jour la date du dernier achat", "Sélectionne les clients avec achat avant 2023"],
+                    correctAnswer: 1
+                },
+                {
+                    question: "Quelle clause est utilisée pour trier les résultats?",
+                    code: null,
+                    options: ["SORT BY", "ORDER BY", "ARRANGE BY", "GROUP BY"],
+                    correctAnswer: 1
+                },
+                {
+                    question: "Quelle commande crée une nouvelle table dans une base de données?",
+                    code: null,
+                    options: ["CREATE TABLE", "ADD TABLE", "INSERT TABLE", "NEW TABLE"],
+                    correctAnswer: 0
+                },
+                {
+                    question: "Que fait la clause GROUP BY?",
+                    code: null,
+                    options: ["Filtre les groupes", "Regroupe les lignes ayant des valeurs communes", "Trie les résultats par groupe", "Combine plusieurs tables"],
+                    correctAnswer: 1
+                }
+            ]
+        };
+
+        // Éléments DOM
+        const elements = {
+            currentQuestion: document.getElementById('currentQuestion'),
+            totalQuestions: document.getElementById('totalQuestions'),
+            timer: document.getElementById('timer'),
+            gameStatus: document.getElementById('gameStatus'),
+            questionText: document.getElementById('questionText'),
+            codeSnippet: document.getElementById('codeSnippet'),
+            answerOptions: document.getElementById('answerOptions'),
+            startGame: document.getElementById('startGame'),
+            submitAnswer: document.getElementById('submitAnswer'),
+            nextQuestion: document.getElementById('nextQuestion'),
+            playersList: document.getElementById('playersList'),
+            playerSetup: document.getElementById('playerSetup'),
+            resultsPanel: document.getElementById('resultsPanel'),
+            playerName: document.getElementById('playerName'),
+            savePlayerConfig: document.getElementById('savePlayerConfig'),
+            playAgain: document.getElementById('playAgain'),
+            finalScore: document.getElementById('finalScore'),
+            correctAnswers: document.getElementById('correctAnswers'),
+            averageTime: document.getElementById('averageTime'),
+            speedScore: document.getElementById('speedScore'),
+            finalPosition: document.getElementById('finalPosition')
+        };
+
+        // Initialisation du jeu
+        function initGame() {
+            // Configuration du joueur
+            elements.savePlayerConfig.addEventListener('click', savePlayerConfig);
+            
+            // Configuration des avatars
+            document.querySelectorAll('.avatar-option').forEach(avatar => {
+                avatar.addEventListener('click', function() {
+                    document.querySelectorAll('.avatar-option').forEach(a => a.classList.remove('selected'));
+                    this.classList.add('selected');
+                });
+            });
+            
+            // Configuration des boutons du jeu
+            elements.startGame.addEventListener('click', startGame);
+            elements.submitAnswer.addEventListener('click', submitAnswer);
+            elements.nextQuestion.addEventListener('click', nextQuestion);
+            elements.playAgain.addEventListener('click', resetGame);
+            
+            // Mise à jour de l'affichage initial
+            updatePlayersList();
+            loadQuestion(gameData.currentQuestionIndex);
+            elements.totalQuestions.textContent = gameData.totalQuestions;
         }
-        
-        console.log("DAGA - Jeu SQL Multijoueur chargé");
+
+        // Sauvegarde de la configuration du joueur
+        function savePlayerConfig() {
+            const name = elements.playerName.value.trim() || "Joueur 1";
+            gameData.playerName = name;
+            
+            const selectedAvatar = document.querySelector('.avatar-option.selected');
+            const avatarText = selectedAvatar.textContent;
+            const avatarColor = selectedAvatar.getAttribute('data-color');
+            
+            gameData.playerAvatar = { text: avatarText, color: avatarColor };
+            
+            // Mettre à jour le joueur actuel dans la liste
+            const currentPlayer = gameData.players.find(p => p.isCurrentPlayer);
+            if (currentPlayer) {
+                currentPlayer.name = name;
+                currentPlayer.avatar = { text: avatarText, color: avatarColor };
+            }
+            
+            updatePlayersList();
+            alert(`Configuration sauvegardée: ${name}`);
+        }
+
+        // Démarrage du jeu
+        function startGame() {
+            if (gameData.gameStarted) return;
+            
+            gameData.gameStarted = true;
+            gameData.currentQuestionIndex = 0;
+            gameData.playerAnswers = [];
+            
+            elements.startGame.disabled = true;
+            elements.submitAnswer.disabled = false;
+            elements.nextQuestion.disabled = true;
+            
+            // Mettre à jour le statut
+            elements.gameStatus.textContent = "La partie a commencé! Répondez rapidement!";
+            
+            // Démarrer la première question
+            loadQuestion(gameData.currentQuestionIndex);
+            startTimer();
+        }
+
+        // Chargement d'une question
+        function loadQuestion(index) {
+            const question = gameData.questions[index];
+            
+            // Mettre à jour l'affichage de la question
+            elements.currentQuestion.textContent = index + 1;
+            elements.questionText.textContent = question.question;
+            
+            // Afficher ou masquer le snippet de code
+            if (question.code) {
+                elements.codeSnippet.textContent = question.code;
+                elements.codeSnippet.classList.remove('hidden');
+            } else {
+                elements.codeSnippet.classList.add('hidden');
+            }
+            
+            // Créer les options de réponse
+            elements.answerOptions.innerHTML = '';
+            question.options.forEach((option, i) => {
+                const optionElement = document.createElement('div');
+                optionElement.className = 'answer-option';
+                optionElement.textContent = option;
+                optionElement.dataset.index = i;
+                optionElement.addEventListener('click', () => selectAnswer(i));
+                elements.answerOptions.appendChild(optionElement);
+            });
+            
+            // Réinitialiser la sélection
+            gameData.selectedAnswer = null;
+            
+            // Réinitialiser le timer
+            gameData.timeLeft = gameData.timePerQuestion;
+            elements.timer.textContent = `${gameData.timeLeft}s`;
+        }
+
+        // Sélection d'une réponse
+        function selectAnswer(index) {
+            if (!gameData.gameStarted) return;
+            
+            // Désélectionner toutes les options
+            document.querySelectorAll('.answer-option').forEach(option => {
+                option.classList.remove('selected');
+            });
+            
+            // Sélectionner l'option choisie
+            const selectedOption = document.querySelector(`.answer-option[data-index="${index}"]`);
+            selectedOption.classList.add('selected');
+            
+            gameData.selectedAnswer = index;
+        }
+
+        // Soumission d'une réponse
+        function submitAnswer() {
+            if (!gameData.gameStarted || gameData.selectedAnswer === null) {
+                alert("Veuillez sélectionner une réponse!");
+                return;
+            }
+            
+            // Arrêter le timer
+            clearInterval(gameData.timer);
+            
+            // Enregistrer la réponse du joueur
+            const question = gameData.questions[gameData.currentQuestionIndex];
+            const isCorrect = gameData.selectedAnswer === question.correctAnswer;
+            const timeUsed = gameData.timePerQuestion - gameData.timeLeft;
+            
+            gameData.playerAnswers.push({
+                questionIndex: gameData.currentQuestionIndex,
+                selectedAnswer: gameData.selectedAnswer,
+                isCorrect: isCorrect,
+                timeUsed: timeUsed,
+                points: calculatePoints(isCorrect, timeUsed)
+            });
+            
+            // Mettre à jour le score du joueur
+            const currentPlayer = gameData.players.find(p => p.isCurrentPlayer);
+            if (currentPlayer) {
+                currentPlayer.score += gameData.playerAnswers[gameData.playerAnswers.length - 1].points;
+            }
+            
+            // Afficher la réponse correcte
+            highlightCorrectAnswer(question.correctAnswer);
+            
+            // Désactiver le bouton de soumission
+            elements.submitAnswer.disabled = true;
+            
+            // Activer le bouton question suivante
+            elements.nextQuestion.disabled = false;
+            
+            // Mettre à jour le classement
+            updatePlayersList();
+            
+            // Mettre à jour le statut
+            if (isCorrect) {
+                elements.gameStatus.textContent = `Correct! +${gameData.playerAnswers[gameData.playerAnswers.length - 1].points} points`;
+            } else {
+                elements.gameStatus.textContent = "Incorrect. La bonne réponse est mise en évidence.";
+            }
+        }
+
+        // Calcul des points
+        function calculatePoints(isCorrect, timeUsed) {
+            if (!isCorrect) return 0;
+            
+            // Base points pour une réponse correcte
+            let points = 100;
+            
+            // Bonus pour la rapidité (max 50 points)
+            const timeBonus = Math.max(0, 50 - Math.floor(timeUsed / gameData.timePerQuestion * 50));
+            points += timeBonus;
+            
+            return points;
+        }
+
+        // Mise en évidence de la bonne réponse
+        function highlightCorrectAnswer(correctIndex) {
+            document.querySelectorAll('.answer-option').forEach((option, index) => {
+                if (index === correctIndex) {
+                    option.classList.add('correct');
+                } else if (index === gameData.selectedAnswer && index !== correctIndex) {
+                    option.classList.add('incorrect');
+                }
+                
+                // Désactiver les clics
+                option.style.pointerEvents = 'none';
+            });
+        }
+
+        // Passage à la question suivante
+        function nextQuestion() {
+            gameData.currentQuestionIndex++;
+            
+            if (gameData.currentQuestionIndex < gameData.totalQuestions) {
+                // Charger la question suivante
+                loadQuestion(gameData.currentQuestionIndex);
+                
+                // Réactiver le bouton de soumission
+                elements.submitAnswer.disabled = false;
+                
+                // Désactiver le bouton question suivante
+                elements.nextQuestion.disabled = true;
+                
+                // Réinitialiser le statut
+                elements.gameStatus.textContent = "Répondez rapidement!";
+                
+                // Démarrer le timer
+                startTimer();
+            } else {
+                // Fin du jeu
+                endGame();
+            }
+        }
+
+        // Démarrage du timer
+        function startTimer() {
+            clearInterval(gameData.timer);
+            
+            gameData.timer = setInterval(() => {
+                gameData.timeLeft--;
+                elements.timer.textContent = `${gameData.timeLeft}s`;
+                
+                if (gameData.timeLeft <= 0) {
+                    clearInterval(gameData.timer);
+                    
+                    // Si le joueur n'a pas répondu, considérer comme incorrect
+                    if (gameData.selectedAnswer === null) {
+                        gameData.playerAnswers.push({
+                            questionIndex: gameData.currentQuestionIndex,
+                            selectedAnswer: null,
+                            isCorrect: false,
+                            timeUsed: gameData.timePerQuestion,
+                            points: 0
+                        });
+                        
+                        // Afficher la bonne réponse
+                        const question = gameData.questions[gameData.currentQuestionIndex];
+                        highlightCorrectAnswer(question.correctAnswer);
+                        
+                        // Désactiver le bouton de soumission
+                        elements.submitAnswer.disabled = true;
+                        
+                        // Activer le bouton question suivante
+                        elements.nextQuestion.disabled = false;
+                        
+                        // Mettre à jour le statut
+                        elements.gameStatus.textContent = "Temps écoulé! La bonne réponse est mise en évidence.";
+                    }
+                }
+            }, 1000);
+        }
+
+        // Fin du jeu
+        function endGame() {
+            clearInterval(gameData.timer);
+            
+            gameData.gameStarted = false;
+            
+            // Calculer les résultats
+            const correctAnswers = gameData.playerAnswers.filter(a => a.isCorrect).length;
+            const totalTime = gameData.playerAnswers.reduce((sum, a) => sum + a.timeUsed, 0);
+            const averageTime = correctAnswers > 0 ? Math.round(totalTime / correctAnswers) : 0;
+            const speedScore = gameData.playerAnswers.reduce((sum, a) => sum + (a.isCorrect ? (gameData.timePerQuestion - a.timeUsed) : 0), 0);
+            const totalScore = gameData.playerAnswers.reduce((sum, a) => sum + a.points, 0);
+            
+            // Mettre à jour l'affichage des résultats
+            elements.finalScore.textContent = `${totalScore} pts`;
+            elements.correctAnswers.textContent = `${correctAnswers}/${gameData.totalQuestions}`;
+            elements.averageTime.textContent = `${averageTime}s`;
+            elements.speedScore.textContent = speedScore;
+            
+            // Déterminer la position finale
+            const sortedPlayers = [...gameData.players].sort((a, b) => b.score - a.score);
+            const playerPosition = sortedPlayers.findIndex(p => p.isCurrentPlayer) + 1;
+            elements.finalPosition.textContent = `${playerPosition}${getPositionSuffix(playerPosition)}`;
+            
+            // Afficher le panneau des résultats
+            elements.resultsPanel.classList.remove('hidden');
+            
+            // Mettre à jour le statut
+            elements.gameStatus.textContent = "Jeu terminé! Consultez vos résultats.";
+            
+            // Désactiver les boutons
+            elements.submitAnswer.disabled = true;
+            elements.nextQuestion.disabled = true;
+            elements.startGame.disabled = false;
+        }
+
+        // Réinitialisation du jeu
+        function resetGame() {
+            // Réinitialiser les données du jeu
+            gameData.currentQuestionIndex = 0;
+            gameData.playerAnswers = [];
+            gameData.timeLeft = gameData.timePerQuestion;
+            gameData.selectedAnswer = null;
+            
+            // Réinitialiser les scores des joueurs
+            gameData.players.forEach(player => {
+                player.score = 0;
+            });
+            
+            // Cacher le panneau des résultats
+            elements.resultsPanel.classList.add('hidden');
+            
+            // Réactiver le bouton de démarrage
+            elements.startGame.disabled = false;
+            
+            // Mettre à jour le statut
+            elements.gameStatus.textContent = "Prêt pour une nouvelle partie!";
+            elements.timer.textContent = `${gameData.timeLeft}s`;
+            
+            // Recharger la première question
+            loadQuestion(0);
+            updatePlayersList();
+        }
+
+        // Mise à jour de la liste des joueurs
+        function updatePlayersList() {
+            elements.playersList.innerHTML = '';
+            
+            // Trier les joueurs par score
+            const sortedPlayers = [...gameData.players].sort((a, b) => b.score - a.score);
+            
+            // Afficher chaque joueur
+            sortedPlayers.forEach((player, index) => {
+                const playerElement = document.createElement('div');
+                playerElement.className = `player ${player.isCurrentPlayer ? 'me' : ''}`;
+                
+                playerElement.innerHTML = `
+                    <div class="player-name">
+                        <div class="player-position">${index + 1}</div>
+                        <div class="player-avatar" style="background-color: ${player.avatar.color};">${player.avatar.text}</div>
+                        <div>${player.name}</div>
+                    </div>
+                    <div class="player-score">${player.score} pts</div>
+                `;
+                
+                elements.playersList.appendChild(playerElement);
+            });
+        }
+
+        // Obtenir le suffixe de position (1er, 2ème, etc.)
+        function getPositionSuffix(position) {
+            if (position === 1) return "er";
+            return "ème";
+        }
+
+        // Initialiser le jeu au chargement de la page
+        window.addEventListener('DOMContentLoaded', initGame);
     </script>
 </body>
 </html>
