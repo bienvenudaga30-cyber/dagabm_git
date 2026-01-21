@@ -4,931 +4,767 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>DAGA - Quiz SQL Multijoueur</title>
+    
+    <!-- PWA Configuration -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#1a2a6c">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="DAGA Quiz">
+    <link rel="apple-touch-icon" href="icons/icon-192.png">
+    
+    <!-- Styles -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+    
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-        
-        body {
-            background: linear-gradient(135deg, #1a2a6c, #3a7bd5);
-            color: #fff;
-            min-height: 100vh;
-            padding: 20px;
-        }
-        
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-        
-        header {
-            text-align: center;
-            padding: 20px 0;
-            margin-bottom: 30px;
-        }
-        
-        h1 {
-            font-size: 2.8rem;
-            margin-bottom: 10px;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
-        }
-        
-        .subtitle {
-            font-size: 1.2rem;
-            opacity: 0.9;
-            margin-bottom: 20px;
-        }
-        
-        .game-container {
-            display: grid;
-            grid-template-columns: 1fr 350px;
-            gap: 25px;
-        }
-        
-        @media (max-width: 900px) {
-            .game-container {
-                grid-template-columns: 1fr;
-            }
-        }
-        
-        .main-panel {
-            background-color: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
-            border-radius: 15px;
-            padding: 25px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-        }
-        
-        .sidebar {
-            display: flex;
-            flex-direction: column;
-            gap: 25px;
-        }
-        
-        .panel {
-            background-color: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
-            border-radius: 15px;
-            padding: 20px;
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
-        }
-        
-        .panel h2 {
-            font-size: 1.5rem;
-            margin-bottom: 15px;
-            padding-bottom: 10px;
-            border-bottom: 2px solid rgba(255, 255, 255, 0.2);
-        }
-        
-        .game-state {
-            text-align: center;
-            margin-bottom: 25px;
-        }
-        
-        .question-counter {
-            font-size: 1.3rem;
-            background-color: rgba(0, 0, 0, 0.2);
-            padding: 8px 15px;
-            border-radius: 50px;
-            display: inline-block;
-            margin-bottom: 15px;
-        }
-        
-        .timer {
-            font-size: 2.2rem;
-            font-weight: bold;
-            color: #ffcc00;
-            text-shadow: 0 0 10px rgba(255, 204, 0, 0.5);
-            margin-bottom: 10px;
-        }
-        
-        .question-container {
-            margin-bottom: 30px;
-        }
-        
-        .question-text {
-            font-size: 1.4rem;
-            line-height: 1.5;
-            margin-bottom: 25px;
-            padding: 20px;
-            background-color: rgba(0, 0, 0, 0.2);
-            border-radius: 10px;
-        }
-        
-        .code-snippet {
-            background-color: #2d3748;
-            color: #e2e8f0;
-            padding: 15px;
-            border-radius: 8px;
-            font-family: 'Courier New', monospace;
-            margin: 15px 0;
-            overflow-x: auto;
-            font-size: 1.1rem;
-        }
-        
-        .answer-options {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 15px;
-        }
-        
-        .answer-option {
-            background-color: rgba(255, 255, 255, 0.1);
-            border: 2px solid rgba(255, 255, 255, 0.2);
-            border-radius: 10px;
-            padding: 18px 20px;
-            font-size: 1.1rem;
-            cursor: pointer;
-            transition: all 0.2s;
-            text-align: left;
-        }
-        
-        .answer-option:hover {
-            background-color: rgba(255, 255, 255, 0.2);
-            transform: translateY(-3px);
-        }
-        
-        .answer-option.selected {
-            background-color: rgba(52, 152, 219, 0.3);
-            border-color: #3498db;
-        }
-        
-        .answer-option.correct {
-            background-color: rgba(46, 204, 113, 0.3);
-            border-color: #2ecc71;
-        }
-        
-        .answer-option.incorrect {
-            background-color: rgba(231, 76, 60, 0.3);
-            border-color: #e74c3c;
-        }
-        
-        .game-controls {
-            display: flex;
-            justify-content: center;
-            gap: 15px;
-            margin-top: 20px;
-        }
-        
-        button {
-            background-color: #3498db;
+        /* Styles additionnels pour l'app */
+        .install-btn {
+            background: linear-gradient(135deg, #ff6b6b, #ee5a52);
             color: white;
             border: none;
-            border-radius: 8px;
-            padding: 14px 25px;
+            border-radius: 50px;
+            padding: 15px 30px;
             font-size: 1.1rem;
             cursor: pointer;
-            transition: all 0.2s;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-weight: 600;
-        }
-        
-        button:hover {
-            background-color: #2980b9;
-            transform: translateY(-2px);
-        }
-        
-        button:disabled {
-            background-color: #7f8c8d;
-            cursor: not-allowed;
-            transform: none;
-        }
-        
-        button#startGame {
-            background-color: #2ecc71;
-        }
-        
-        button#startGame:hover {
-            background-color: #27ae60;
-        }
-        
-        .players-list {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-            max-height: 300px;
-            overflow-y: auto;
-            padding-right: 5px;
-        }
-        
-        .player {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 12px 15px;
-            background-color: rgba(255, 255, 255, 0.1);
-            border-radius: 8px;
-        }
-        
-        .player.me {
-            background-color: rgba(52, 152, 219, 0.3);
-            border: 1px solid #3498db;
-        }
-        
-        .player-name {
-            display: flex;
+            margin: 20px;
+            display: inline-flex;
             align-items: center;
             gap: 10px;
+            transition: all 0.3s;
         }
         
-        .player-score {
-            font-weight: bold;
-            font-size: 1.2rem;
+        .install-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(255, 107, 107, 0.3);
         }
         
-        .player-avatar {
-            width: 35px;
-            height: 35px;
-            border-radius: 50%;
-            background-color: #3498db;
+        .platform-buttons {
             display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: bold;
-        }
-        
-        .player-position {
-            font-weight: bold;
-            color: #ffcc00;
-        }
-        
-        .results-container {
-            text-align: center;
-        }
-        
-        .final-score {
-            font-size: 3.5rem;
-            font-weight: bold;
-            color: #ffcc00;
-            margin: 20px 0;
-            text-shadow: 0 0 15px rgba(255, 204, 0, 0.7);
-        }
-        
-        .score-breakdown {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
             gap: 15px;
-            margin: 25px 0;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin: 30px 0;
         }
         
-        .score-item {
-            background-color: rgba(255, 255, 255, 0.1);
-            padding: 15px;
+        .platform-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(255, 255, 255, 0.2);
             border-radius: 10px;
-        }
-        
-        .score-value {
-            font-size: 1.8rem;
-            font-weight: bold;
-            color: #2ecc71;
-        }
-        
-        .player-setup input {
-            width: 100%;
-            padding: 14px;
-            margin-bottom: 15px;
-            border-radius: 8px;
-            border: none;
-            background-color: rgba(255, 255, 255, 0.9);
-            font-size: 1rem;
-        }
-        
-        .avatar-selection {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 10px;
-            margin: 15px 0;
-        }
-        
-        .avatar-option {
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
+            padding: 15px 25px;
+            color: white;
+            text-decoration: none;
             display: flex;
             align-items: center;
-            justify-content: center;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.2s;
+            gap: 10px;
+            transition: all 0.3s;
         }
         
-        .avatar-option:hover {
-            transform: scale(1.1);
+        .platform-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-5px);
         }
         
-        .avatar-option.selected {
-            border: 3px solid #ffcc00;
-            transform: scale(1.1);
+        .hero {
+            text-align: center;
+            padding: 50px 20px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 20px;
+            margin-bottom: 40px;
         }
         
-        .hidden {
-            display: none !important;
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin: 40px 0;
         }
         
-        @media (max-width: 768px) {
-            h1 {
-                font-size: 2rem;
-            }
-            
-            .main-panel, .panel {
-                padding: 15px;
-            }
-            
-            .question-text {
-                font-size: 1.2rem;
-            }
-            
-            .game-controls {
-                flex-direction: column;
-            }
-            
-            button {
-                width: 100%;
-                justify-content: center;
-            }
+        .feature {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 25px;
+            border-radius: 15px;
+            text-align: center;
         }
     </style>
 </head>
 <body>
     <div class="container">
         <header>
-            <h1><i class="fas fa-database"></i> DAGA - Quiz SQL Multijoueur</h1>
-            <p class="subtitle">Affrontez d'autres joueurs en répondant à des questions SQL. Score basé sur la rapidité et l'exactitude.</p>
-        </header>
-        
-        <div class="game-container">
-            <div class="main-panel">
-                <div class="game-state">
-                    <div class="question-counter">Question <span id="currentQuestion">1</span> / <span id="totalQuestions">10</span></div>
-                    <div class="timer" id="timer">30s</div>
-                    <div id="gameStatus">En attente du début de la partie...</div>
+            <div class="hero">
+                <div class="logo" style="font-size: 4rem; color: #00d4ff; margin-bottom: 20px;">
+                    <i class="fas fa-database"></i>
                 </div>
+                <h1 style="font-size: 3rem;">DAGA - Quiz SQL Multijoueur</h1>
+                <p style="font-size: 1.3rem; max-width: 800px; margin: 0 auto 30px;">
+                    Téléchargez l'application pour jouer hors ligne, recevoir des notifications et profiter d'une expérience optimisée !
+                </p>
                 
-                <div class="question-container" id="questionContainer">
-                    <div class="question-text" id="questionText">
-                        Le jeu va commencer dès qu'un administrateur aura lancé la partie. Préparez-vous à répondre à des questions sur SQL !
-                    </div>
-                    <div class="code-snippet hidden" id="codeSnippet"></div>
-                </div>
+                <!-- Bouton d'installation PWA -->
+                <button class="install-btn" id="installButton" style="display: none;">
+                    <i class="fas fa-download"></i> Installer l'application
+                </button>
                 
-                <div class="answer-options" id="answerOptions"></div>
-                
-                <div class="game-controls">
-                    <button id="startGame">
-                        <i class="fas fa-play"></i> Démarrer la partie
-                    </button>
-                    <button id="submitAnswer" disabled>
-                        <i class="fas fa-paper-plane"></i> Soumettre la réponse
-                    </button>
-                    <button id="nextQuestion" disabled>
-                        <i class="fas fa-forward"></i> Question suivante
-                    </button>
+                <div style="margin: 20px 0;">
+                    <a href="game.html" class="install-btn">
+                        <i class="fas fa-play"></i> Jouer maintenant en ligne
+                    </a>
                 </div>
             </div>
+        </header>
+        
+        <!-- Section téléchargement -->
+        <div class="panel">
+            <h2><i class="fas fa-download"></i> Télécharger DAGA</h2>
+            <p>Disponible sur toutes les plateformes :</p>
             
-            <div class="sidebar">
-                <div class="panel">
-                    <h2><i class="fas fa-trophy"></i> Classement en temps réel</h2>
-                    <div class="players-list" id="playersList">
-                        <div class="player me">
-                            <div class="player-name">
-                                <div class="player-position">1</div>
-                                <div class="player-avatar" style="background-color: #3498db;">VO</div>
-                                <div>Vous</div>
-                            </div>
-                            <div class="player-score">0 pts</div>
-                        </div>
-                        <div class="player">
-                            <div class="player-name">
-                                <div class="player-position">2</div>
-                                <div class="player-avatar" style="background-color: #e74c3c;">JD</div>
-                                <div>Joueur 2</div>
-                            </div>
-                            <div class="player-score">0 pts</div>
-                        </div>
-                        <div class="player">
-                            <div class="player-name">
-                                <div class="player-position">3</div>
-                                <div class="player-avatar" style="background-color: #2ecc71;">MJ</div>
-                                <div>Joueur 3</div>
-                            </div>
-                            <div class="player-score">0 pts</div>
-                        </div>
+            <div class="platform-buttons">
+                <a href="#windows" class="platform-btn">
+                    <i class="fab fa-windows"></i>
+                    <div>
+                        <div>Windows</div>
+                        <small>.exe - 50 MB</small>
                     </div>
+                </a>
+                
+                <a href="#mac" class="platform-btn">
+                    <i class="fab fa-apple"></i>
+                    <div>
+                        <div>macOS</div>
+                        <small>.dmg - 55 MB</small>
+                    </div>
+                </a>
+                
+                <a href="#android" class="platform-btn">
+                    <i class="fab fa-android"></i>
+                    <div>
+                        <div>Android</div>
+                        <small>.apk - 35 MB</small>
+                    </div>
+                </a>
+                
+                <a href="#linux" class="platform-btn">
+                    <i class="fab fa-linux"></i>
+                    <div>
+                        <div>Linux</div>
+                        <small>.AppImage - 52 MB</small>
+                    </div>
+                </a>
+            </div>
+        </div>
+        
+        <!-- Fonctionnalités -->
+        <div class="features">
+            <div class="feature">
+                <i class="fas fa-wifi-slash fa-3x" style="color: #00d4ff; margin-bottom: 15px;"></i>
+                <h3>Mode hors ligne</h3>
+                <p>Jouez sans connexion internet</p>
+            </div>
+            
+            <div class="feature">
+                <i class="fas fa-bell fa-3x" style="color: #00d4ff; margin-bottom: 15px;"></i>
+                <h3>Notifications</h3>
+                <p>Alertes pour les nouveaux défis</p>
+            </div>
+            
+            <div class="feature">
+                <i class="fas fa-bolt fa-3x" style="color: #00d4ff; margin-bottom: 15px;"></i>
+                <h3>Performance</h3>
+                <p>Optimisé pour mobile et desktop</p>
+            </div>
+            
+            <div class="feature">
+                <i class="fas fa-sync-alt fa-3x" style="color: #00d4ff; margin-bottom: 15px;"></i>
+                <h3>Mises à jour</h3>
+                <p>Automatiques et silencieuses</p>
+            </div>
+        </div>
+        
+        <!-- Instructions -->
+        <div class="panel">
+            <h2><i class="fas fa-info-circle"></i> Comment installer</h2>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-top: 20px;">
+                <div>
+                    <h3><i class="fas fa-mobile-alt"></i> Sur mobile</h3>
+                    <ol style="text-align: left; padding-left: 20px;">
+                        <li>Ouvrez dans Chrome/Safari</li>
+                        <li>Cliquez sur "Partager"</li>
+                        <li>Sélectionnez "Ajouter à l'écran d'accueil"</li>
+                        <li>Lancez comme une application</li>
+                    </ol>
                 </div>
                 
-                <div class="panel player-setup" id="playerSetup">
-                    <h2><i class="fas fa-user"></i> Configuration du joueur</h2>
-                    <input type="text" id="playerName" placeholder="Votre nom" maxlength="15" value="Joueur 1">
-                    <p>Choisissez votre avatar :</p>
-                    <div class="avatar-selection">
-                        <div class="avatar-option selected" style="background-color: #3498db;" data-color="#3498db">VO</div>
-                        <div class="avatar-option" style="background-color: #e74c3c;" data-color="#e74c3c">JD</div>
-                        <div class="avatar-option" style="background-color: #2ecc71;" data-color="#2ecc71">MJ</div>
-                        <div class="avatar-option" style="background-color: #9b59b6;" data-color="#9b59b6">AL</div>
-                    </div>
-                    <button id="savePlayerConfig">
-                        <i class="fas fa-save"></i> Enregistrer
-                    </button>
-                </div>
-                
-                <div class="panel results-container hidden" id="resultsPanel">
-                    <h2><i class="fas fa-chart-line"></i> Vos résultats</h2>
-                    <div class="final-score" id="finalScore">0 pts</div>
-                    <div class="score-breakdown">
-                        <div class="score-item">
-                            <div>Questions correctes</div>
-                            <div class="score-value" id="correctAnswers">0/10</div>
-                        </div>
-                        <div class="score-item">
-                            <div>Temps moyen</div>
-                            <div class="score-value" id="averageTime">0s</div>
-                        </div>
-                        <div class="score-item">
-                            <div>Score rapidité</div>
-                            <div class="score-value" id="speedScore">0</div>
-                        </div>
-                        <div class="score-item">
-                            <div>Position finale</div>
-                            <div class="score-value" id="finalPosition">1er</div>
-                        </div>
-                    </div>
-                    <button id="playAgain">
-                        <i class="fas fa-redo"></i> Rejouer
-                    </button>
+                <div>
+                    <h3><i class="fas fa-desktop"></i> Sur ordinateur</h3>
+                    <ol style="text-align: left; padding-left: 20px;">
+                        <li>Cliquez sur le bouton d'installation</li>
+                        <li>Autorisez l'installation</li>
+                        <li>Lancez depuis le menu Démarrer</li>
+                        <li>Profitez de DAGA !</li>
+                    </ol>
                 </div>
             </div>
         </div>
     </div>
 
+    <!-- Scripts -->
+    <script src="game.js"></script>
     <script>
-        // Données du jeu
-        const gameData = {
-            playerName: "Joueur 1",
-            playerAvatar: { text: "VO", color: "#3498db" },
-            players: [
-                { id: 1, name: "Vous", score: 0, avatar: { text: "VO", color: "#3498db" }, isCurrentPlayer: true },
-                { id: 2, name: "Joueur 2", score: 0, avatar: { text: "JD", color: "#e74c3c" }, isCurrentPlayer: false },
-                { id: 3, name: "Joueur 3", score: 0, avatar: { text: "MJ", color: "#2ecc71" }, isCurrentPlayer: false }
-            ],
-            currentQuestionIndex: 0,
-            totalQuestions: 10,
-            timePerQuestion: 30,
-            timer: null,
-            timeLeft: 30,
-            gameStarted: false,
-            selectedAnswer: null,
-            playerAnswers: [],
-            questions: [
-                {
-                    question: "Quelle commande SQL est utilisée pour récupérer des données d'une base de données?",
-                    code: null,
-                    options: ["GET", "SELECT", "EXTRACT", "QUERY"],
-                    correctAnswer: 1
-                },
-                {
-                    question: "Quelle clause SQL est utilisée pour filtrer les résultats?",
-                    code: null,
-                    options: ["FILTER", "WHERE", "HAVING", "CONDITION"],
-                    correctAnswer: 1
-                },
-                {
-                    question: "Quelle est la sortie de cette requête?",
-                    code: "SELECT COUNT(*) FROM employees WHERE department = 'Sales';",
-                    options: ["Le nombre total d'employés", "Le nombre d'employés dans le département Sales", "La somme des salaires du département Sales", "Une erreur car il manque GROUP BY"],
-                    correctAnswer: 1
-                },
-                {
-                    question: "Quelle commande est utilisée pour mettre à jour des données dans une table SQL?",
-                    code: null,
-                    options: ["MODIFY", "UPDATE", "CHANGE", "ALTER"],
-                    correctAnswer: 1
-                },
-                {
-                    question: "Quelle jointure retourne tous les enregistrements de la table gauche et les enregistrements correspondants de la table droite?",
-                    code: null,
-                    options: ["INNER JOIN", "LEFT JOIN", "RIGHT JOIN", "FULL JOIN"],
-                    correctAnswer: 1
-                },
-                {
-                    question: "Quelle fonction agrège des valeurs numériques?",
-                    code: null,
-                    options: ["COUNT()", "AVG()", "MAX()", "Toutes ces réponses"],
-                    correctAnswer: 3
-                },
-                {
-                    question: "Que fait cette requête?",
-                    code: "DELETE FROM customers WHERE last_purchase < '2023-01-01';",
-                    options: ["Supprime tous les clients", "Supprime les clients sans achat depuis 2023", "Met à jour la date du dernier achat", "Sélectionne les clients avec achat avant 2023"],
-                    correctAnswer: 1
-                },
-                {
-                    question: "Quelle clause est utilisée pour trier les résultats?",
-                    code: null,
-                    options: ["SORT BY", "ORDER BY", "ARRANGE BY", "GROUP BY"],
-                    correctAnswer: 1
-                },
-                {
-                    question: "Quelle commande crée une nouvelle table dans une base de données?",
-                    code: null,
-                    options: ["CREATE TABLE", "ADD TABLE", "INSERT TABLE", "NEW TABLE"],
-                    correctAnswer: 0
-                },
-                {
-                    question: "Que fait la clause GROUP BY?",
-                    code: null,
-                    options: ["Filtre les groupes", "Regroupe les lignes ayant des valeurs communes", "Trie les résultats par groupe", "Combine plusieurs tables"],
-                    correctAnswer: 1
-                }
-            ]
-        };
-
-        // Éléments DOM
-        const elements = {
-            currentQuestion: document.getElementById('currentQuestion'),
-            totalQuestions: document.getElementById('totalQuestions'),
-            timer: document.getElementById('timer'),
-            gameStatus: document.getElementById('gameStatus'),
-            questionText: document.getElementById('questionText'),
-            codeSnippet: document.getElementById('codeSnippet'),
-            answerOptions: document.getElementById('answerOptions'),
-            startGame: document.getElementById('startGame'),
-            submitAnswer: document.getElementById('submitAnswer'),
-            nextQuestion: document.getElementById('nextQuestion'),
-            playersList: document.getElementById('playersList'),
-            playerSetup: document.getElementById('playerSetup'),
-            resultsPanel: document.getElementById('resultsPanel'),
-            playerName: document.getElementById('playerName'),
-            savePlayerConfig: document.getElementById('savePlayerConfig'),
-            playAgain: document.getElementById('playAgain'),
-            finalScore: document.getElementById('finalScore'),
-            correctAnswers: document.getElementById('correctAnswers'),
-            averageTime: document.getElementById('averageTime'),
-            speedScore: document.getElementById('speedScore'),
-            finalPosition: document.getElementById('finalPosition')
-        };
-
-        // Initialisation du jeu
-        function initGame() {
-            // Configuration du joueur
-            elements.savePlayerConfig.addEventListener('click', savePlayerConfig);
-            
-            // Configuration des avatars
-            document.querySelectorAll('.avatar-option').forEach(avatar => {
-                avatar.addEventListener('click', function() {
-                    document.querySelectorAll('.avatar-option').forEach(a => a.classList.remove('selected'));
-                    this.classList.add('selected');
+        // Service Worker Registration
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('service-worker.js')
+                .then(registration => {
+                    console.log('Service Worker enregistré avec succès:', registration);
+                })
+                .catch(error => {
+                    console.log('Échec d\'enregistrement du Service Worker:', error);
                 });
+        }
+        
+        // PWA Installation
+        let deferredPrompt;
+        const installButton = document.getElementById('installButton');
+        
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            installButton.style.display = 'flex';
+            
+            installButton.addEventListener('click', async () => {
+                installButton.style.display = 'none';
+                deferredPrompt.prompt();
+                const { outcome } = await deferredPrompt.userChoice;
+                console.log(`Résultat de l'installation: ${outcome}`);
+                deferredPrompt = null;
             });
+        });
+        
+        // Vérifier si l'app est déjà installée
+        window.addEventListener('appinstalled', () => {
+            console.log('DAGA installé avec succès!');
+            installButton.style.display = 'none';
+            alert('🎉 DAGA a été installé avec succès! Lancez-le depuis votre écran d\'accueil.');
+        });
+        
+        // Détection de plateforme
+        function detectPlatform() {
+            const userAgent = navigator.userAgent || navigator.vendor || window.opera;
             
-            // Configuration des boutons du jeu
-            elements.startGame.addEventListener('click', startGame);
-            elements.submitAnswer.addEventListener('click', submitAnswer);
-            elements.nextQuestion.addEventListener('click', nextQuestion);
-            elements.playAgain.addEventListener('click', resetGame);
+            if (/windows phone/i.test(userAgent)) return "Windows Phone";
+            if (/android/i.test(userAgent)) return "Android";
+            if (/iPad|iPhone|iPod/.test(userAgent) && !window.MSStream) return "iOS";
+            if (/win/i.test(userAgent)) return "Windows";
+            if (/mac/i.test(userAgent)) return "macOS";
+            if (/linux/i.test(userAgent)) return "Linux";
             
-            // Mise à jour de l'affichage initial
-            updatePlayersList();
-            loadQuestion(gameData.currentQuestionIndex);
-            elements.totalQuestions.textContent = gameData.totalQuestions;
+            return "Unknown";
         }
-
-        // Sauvegarde de la configuration du joueur
-        function savePlayerConfig() {
-            const name = elements.playerName.value.trim() || "Joueur 1";
-            gameData.playerName = name;
+        
+        // Afficher les boutons appropriés
+        document.addEventListener('DOMContentLoaded', () => {
+            const platform = detectPlatform();
+            console.log(`Plateforme détectée: ${platform}`);
             
-            const selectedAvatar = document.querySelector('.avatar-option.selected');
-            const avatarText = selectedAvatar.textContent;
-            const avatarColor = selectedAvatar.getAttribute('data-color');
-            
-            gameData.playerAvatar = { text: avatarText, color: avatarColor };
-            
-            // Mettre à jour le joueur actuel dans la liste
-            const currentPlayer = gameData.players.find(p => p.isCurrentPlayer);
-            if (currentPlayer) {
-                currentPlayer.name = name;
-                currentPlayer.avatar = { text: avatarText, color: avatarColor };
-            }
-            
-            updatePlayersList();
-            alert(`Configuration sauvegardée: ${name}`);
-        }
-
-        // Démarrage du jeu
-        function startGame() {
-            if (gameData.gameStarted) return;
-            
-            gameData.gameStarted = true;
-            gameData.currentQuestionIndex = 0;
-            gameData.playerAnswers = [];
-            
-            elements.startGame.disabled = true;
-            elements.submitAnswer.disabled = false;
-            elements.nextQuestion.disabled = true;
-            
-            // Mettre à jour le statut
-            elements.gameStatus.textContent = "La partie a commencé! Répondez rapidement!";
-            
-            // Démarrer la première question
-            loadQuestion(gameData.currentQuestionIndex);
-            startTimer();
-        }
-
-        // Chargement d'une question
-        function loadQuestion(index) {
-            const question = gameData.questions[index];
-            
-            // Mettre à jour l'affichage de la question
-            elements.currentQuestion.textContent = index + 1;
-            elements.questionText.textContent = question.question;
-            
-            // Afficher ou masquer le snippet de code
-            if (question.code) {
-                elements.codeSnippet.textContent = question.code;
-                elements.codeSnippet.classList.remove('hidden');
-            } else {
-                elements.codeSnippet.classList.add('hidden');
-            }
-            
-            // Créer les options de réponse
-            elements.answerOptions.innerHTML = '';
-            question.options.forEach((option, i) => {
-                const optionElement = document.createElement('div');
-                optionElement.className = 'answer-option';
-                optionElement.textContent = option;
-                optionElement.dataset.index = i;
-                optionElement.addEventListener('click', () => selectAnswer(i));
-                elements.answerOptions.appendChild(optionElement);
-            });
-            
-            // Réinitialiser la sélection
-            gameData.selectedAnswer = null;
-            
-            // Réinitialiser le timer
-            gameData.timeLeft = gameData.timePerQuestion;
-            elements.timer.textContent = `${gameData.timeLeft}s`;
-        }
-
-        // Sélection d'une réponse
-        function selectAnswer(index) {
-            if (!gameData.gameStarted) return;
-            
-            // Désélectionner toutes les options
-            document.querySelectorAll('.answer-option').forEach(option => {
-                option.classList.remove('selected');
-            });
-            
-            // Sélectionner l'option choisie
-            const selectedOption = document.querySelector(`.answer-option[data-index="${index}"]`);
-            selectedOption.classList.add('selected');
-            
-            gameData.selectedAnswer = index;
-        }
-
-        // Soumission d'une réponse
-        function submitAnswer() {
-            if (!gameData.gameStarted || gameData.selectedAnswer === null) {
-                alert("Veuillez sélectionner une réponse!");
-                return;
-            }
-            
-            // Arrêter le timer
-            clearInterval(gameData.timer);
-            
-            // Enregistrer la réponse du joueur
-            const question = gameData.questions[gameData.currentQuestionIndex];
-            const isCorrect = gameData.selectedAnswer === question.correctAnswer;
-            const timeUsed = gameData.timePerQuestion - gameData.timeLeft;
-            
-            gameData.playerAnswers.push({
-                questionIndex: gameData.currentQuestionIndex,
-                selectedAnswer: gameData.selectedAnswer,
-                isCorrect: isCorrect,
-                timeUsed: timeUsed,
-                points: calculatePoints(isCorrect, timeUsed)
-            });
-            
-            // Mettre à jour le score du joueur
-            const currentPlayer = gameData.players.find(p => p.isCurrentPlayer);
-            if (currentPlayer) {
-                currentPlayer.score += gameData.playerAnswers[gameData.playerAnswers.length - 1].points;
-            }
-            
-            // Afficher la réponse correcte
-            highlightCorrectAnswer(question.correctAnswer);
-            
-            // Désactiver le bouton de soumission
-            elements.submitAnswer.disabled = true;
-            
-            // Activer le bouton question suivante
-            elements.nextQuestion.disabled = false;
-            
-            // Mettre à jour le classement
-            updatePlayersList();
-            
-            // Mettre à jour le statut
-            if (isCorrect) {
-                elements.gameStatus.textContent = `Correct! +${gameData.playerAnswers[gameData.playerAnswers.length - 1].points} points`;
-            } else {
-                elements.gameStatus.textContent = "Incorrect. La bonne réponse est mise en évidence.";
-            }
-        }
-
-        // Calcul des points
-        function calculatePoints(isCorrect, timeUsed) {
-            if (!isCorrect) return 0;
-            
-            // Base points pour une réponse correcte
-            let points = 100;
-            
-            // Bonus pour la rapidité (max 50 points)
-            const timeBonus = Math.max(0, 50 - Math.floor(timeUsed / gameData.timePerQuestion * 50));
-            points += timeBonus;
-            
-            return points;
-        }
-
-        // Mise en évidence de la bonne réponse
-        function highlightCorrectAnswer(correctIndex) {
-            document.querySelectorAll('.answer-option').forEach((option, index) => {
-                if (index === correctIndex) {
-                    option.classList.add('correct');
-                } else if (index === gameData.selectedAnswer && index !== correctIndex) {
-                    option.classList.add('incorrect');
-                }
-                
-                // Désactiver les clics
-                option.style.pointerEvents = 'none';
-            });
-        }
-
-        // Passage à la question suivante
-        function nextQuestion() {
-            gameData.currentQuestionIndex++;
-            
-            if (gameData.currentQuestionIndex < gameData.totalQuestions) {
-                // Charger la question suivante
-                loadQuestion(gameData.currentQuestionIndex);
-                
-                // Réactiver le bouton de soumission
-                elements.submitAnswer.disabled = false;
-                
-                // Désactiver le bouton question suivante
-                elements.nextQuestion.disabled = true;
-                
-                // Réinitialiser le statut
-                elements.gameStatus.textContent = "Répondez rapidement!";
-                
-                // Démarrer le timer
-                startTimer();
-            } else {
-                // Fin du jeu
-                endGame();
-            }
-        }
-
-        // Démarrage du timer
-        function startTimer() {
-            clearInterval(gameData.timer);
-            
-            gameData.timer = setInterval(() => {
-                gameData.timeLeft--;
-                elements.timer.textContent = `${gameData.timeLeft}s`;
-                
-                if (gameData.timeLeft <= 0) {
-                    clearInterval(gameData.timer);
-                    
-                    // Si le joueur n'a pas répondu, considérer comme incorrect
-                    if (gameData.selectedAnswer === null) {
-                        gameData.playerAnswers.push({
-                            questionIndex: gameData.currentQuestionIndex,
-                            selectedAnswer: null,
-                            isCorrect: false,
-                            timeUsed: gameData.timePerQuestion,
-                            points: 0
-                        });
-                        
-                        // Afficher la bonne réponse
-                        const question = gameData.questions[gameData.currentQuestionIndex];
-                        highlightCorrectAnswer(question.correctAnswer);
-                        
-                        // Désactiver le bouton de soumission
-                        elements.submitAnswer.disabled = true;
-                        
-                        // Activer le bouton question suivante
-                        elements.nextQuestion.disabled = false;
-                        
-                        // Mettre à jour le statut
-                        elements.gameStatus.textContent = "Temps écoulé! La bonne réponse est mise en évidence.";
+            // Cache les boutons non pertinents
+            if (platform === "Android" || platform === "iOS") {
+                document.querySelectorAll('.platform-btn').forEach(btn => {
+                    if (!btn.href.includes('android') && !btn.href.includes('ios')) {
+                        btn.style.display = 'none';
                     }
-                }
-            }, 1000);
-        }
-
-        // Fin du jeu
-        function endGame() {
-            clearInterval(gameData.timer);
-            
-            gameData.gameStarted = false;
-            
-            // Calculer les résultats
-            const correctAnswers = gameData.playerAnswers.filter(a => a.isCorrect).length;
-            const totalTime = gameData.playerAnswers.reduce((sum, a) => sum + a.timeUsed, 0);
-            const averageTime = correctAnswers > 0 ? Math.round(totalTime / correctAnswers) : 0;
-            const speedScore = gameData.playerAnswers.reduce((sum, a) => sum + (a.isCorrect ? (gameData.timePerQuestion - a.timeUsed) : 0), 0);
-            const totalScore = gameData.playerAnswers.reduce((sum, a) => sum + a.points, 0);
-            
-            // Mettre à jour l'affichage des résultats
-            elements.finalScore.textContent = `${totalScore} pts`;
-            elements.correctAnswers.textContent = `${correctAnswers}/${gameData.totalQuestions}`;
-            elements.averageTime.textContent = `${averageTime}s`;
-            elements.speedScore.textContent = speedScore;
-            
-            // Déterminer la position finale
-            const sortedPlayers = [...gameData.players].sort((a, b) => b.score - a.score);
-            const playerPosition = sortedPlayers.findIndex(p => p.isCurrentPlayer) + 1;
-            elements.finalPosition.textContent = `${playerPosition}${getPositionSuffix(playerPosition)}`;
-            
-            // Afficher le panneau des résultats
-            elements.resultsPanel.classList.remove('hidden');
-            
-            // Mettre à jour le statut
-            elements.gameStatus.textContent = "Jeu terminé! Consultez vos résultats.";
-            
-            // Désactiver les boutons
-            elements.submitAnswer.disabled = true;
-            elements.nextQuestion.disabled = true;
-            elements.startGame.disabled = false;
-        }
-
-        // Réinitialisation du jeu
-        function resetGame() {
-            // Réinitialiser les données du jeu
-            gameData.currentQuestionIndex = 0;
-            gameData.playerAnswers = [];
-            gameData.timeLeft = gameData.timePerQuestion;
-            gameData.selectedAnswer = null;
-            
-            // Réinitialiser les scores des joueurs
-            gameData.players.forEach(player => {
-                player.score = 0;
-            });
-            
-            // Cacher le panneau des résultats
-            elements.resultsPanel.classList.add('hidden');
-            
-            // Réactiver le bouton de démarrage
-            elements.startGame.disabled = false;
-            
-            // Mettre à jour le statut
-            elements.gameStatus.textContent = "Prêt pour une nouvelle partie!";
-            elements.timer.textContent = `${gameData.timeLeft}s`;
-            
-            // Recharger la première question
-            loadQuestion(0);
-            updatePlayersList();
-        }
-
-        // Mise à jour de la liste des joueurs
-        function updatePlayersList() {
-            elements.playersList.innerHTML = '';
-            
-            // Trier les joueurs par score
-            const sortedPlayers = [...gameData.players].sort((a, b) => b.score - a.score);
-            
-            // Afficher chaque joueur
-            sortedPlayers.forEach((player, index) => {
-                const playerElement = document.createElement('div');
-                playerElement.className = `player ${player.isCurrentPlayer ? 'me' : ''}`;
-                
-                playerElement.innerHTML = `
-                    <div class="player-name">
-                        <div class="player-position">${index + 1}</div>
-                        <div class="player-avatar" style="background-color: ${player.avatar.color};">${player.avatar.text}</div>
-                        <div>${player.name}</div>
-                    </div>
-                    <div class="player-score">${player.score} pts</div>
-                `;
-                
-                elements.playersList.appendChild(playerElement);
-            });
-        }
-
-        // Obtenir le suffixe de position (1er, 2ème, etc.)
-        function getPositionSuffix(position) {
-            if (position === 1) return "er";
-            return "ème";
-        }
-
-        // Initialiser le jeu au chargement de la page
-        window.addEventListener('DOMContentLoaded', initGame);
+                });
+            }
+        });
     </script>
 </body>
 </html>
+{
+  "name": "DAGA Quiz SQL",
+  "short_name": "DAGA",
+  "description": "Jeu multijoueur SQL avec classement en temps réel",
+  "start_url": "/index.html",
+  "display": "standalone",
+  "display_override": ["window-controls-overlay", "standalone"],
+  "orientation": "portrait",
+  "background_color": "#1a2a6c",
+  "theme_color": "#3498db",
+  "categories": ["education", "games", "productivity"],
+  "icons": [
+    {
+      "src": "icons/icon-72.png",
+      "sizes": "72x72",
+      "type": "image/png"
+    },
+    {
+      "src": "icons/icon-96.png",
+      "sizes": "96x96",
+      "type": "image/png"
+    },
+    {
+      "src": "icons/icon-128.png",
+      "sizes": "128x128",
+      "type": "image/png"
+    },
+    {
+      "src": "icons/icon-144.png",
+      "sizes": "144x144",
+      "type": "image/png"
+    },
+    {
+      "src": "icons/icon-152.png",
+      "sizes": "152x152",
+      "type": "image/png"
+    },
+    {
+      "src": "icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icons/icon-384.png",
+      "sizes": "384x384",
+      "type": "image/png"
+    },
+    {
+      "src": "icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "screenshots/screenshot1.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "form_factor": "wide"
+    },
+    {
+      "src": "screenshots/screenshot2.png",
+      "sizes": "750x1334",
+      "type": "image/png",
+      "form_factor": "narrow"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Nouvelle partie",
+      "short_name": "Jouer",
+      "description": "Démarrer une nouvelle partie",
+      "url": "/game.html?action=new",
+      "icons": [{ "src": "icons/play-icon.png", "sizes": "96x96" }]
+    },
+    {
+      "name": "Classement",
+      "short_name": "Scores",
+      "description": "Voir le classement global",
+      "url": "/game.html?action=leaderboard",
+      "icons": [{ "src": "icons/leaderboard-icon.png", "sizes": "96x96" }]
+    }
+  ],
+  "related_applications": [],
+  "prefer_related_applications": false,
+  "scope": "/",
+  "dir": "ltr",
+  "lang": "fr",
+  "protocol_handlers": [
+    {
+      "protocol": "web+daga",
+      "url": "/game.html?invite=%s"
+    }
+  ]
+}
+// Service Worker pour DAGA Quiz
+const CACHE_NAME = 'daga-cache-v1.0.0';
+const urlsToCache = [
+  '/',
+  '/index.html',
+  '/game.html',
+  '/style.css',
+  '/game.js',
+  '/manifest.json',
+  'icons/icon-192.png',
+  'icons/icon-512.png',
+  'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css'
+];
+
+// Installation
+self.addEventListener('install', event => {
+  event.waitUntil(
+    caches.open(CACHE_NAME)
+      .then(cache => {
+        console.log('Cache ouvert');
+        return cache.addAll(urlsToCache);
+      })
+      .then(() => self.skipWaiting())
+  );
+});
+
+// Activation
+self.addEventListener('activate', event => {
+  event.waitUntil(
+    caches.keys().then(cacheNames => {
+      return Promise.all(
+        cacheNames.map(cacheName => {
+          if (cacheName !== CACHE_NAME) {
+            console.log('Suppression de l\'ancien cache:', cacheName);
+            return caches.delete(cacheName);
+          }
+        })
+      );
+    }).then(() => self.clients.claim())
+  );
+});
+
+// Fetch
+self.addEventListener('fetch', event => {
+  event.respondWith(
+    caches.match(event.request)
+      .then(response => {
+        if (response) {
+          return response;
+        }
+        
+        return fetch(event.request).then(response => {
+          if (!response || response.status !== 200 || response.type !== 'basic') {
+            return response;
+          }
+          
+          const responseToCache = response.clone();
+          
+          caches.open(CACHE_NAME)
+            .then(cache => {
+              cache.put(event.request, responseToCache);
+            });
+            
+          return response;
+        });
+      }).catch(() => {
+        // Fallback pour les pages HTML
+        if (event.request.headers.get('accept').includes('text/html')) {
+          return caches.match('/index.html');
+        }
+        
+        // Fallback pour les images
+        if (event.request.headers.get('accept').includes('image')) {
+          return caches.match('icons/icon-512.png');
+        }
+      })
+  );
+});
+
+// Background Sync
+self.addEventListener('sync', event => {
+  if (event.tag === 'sync-scores') {
+    event.waitUntil(syncScores());
+  }
+});
+
+async function syncScores() {
+  try {
+    const scores = await getScoresFromIndexedDB();
+    await sendScoresToServer(scores);
+    await clearScoresFromIndexedDB();
+  } catch (error) {
+    console.error('Erreur de synchronisation:', error);
+  }
+}
+
+// Push Notifications
+self.addEventListener('push', event => {
+  const data = event.data ? event.data.json() : {};
+  
+  const options = {
+    body: data.body || 'Nouveau défi disponible !',
+    icon: 'icons/icon-192.png',
+    badge: 'icons/badge-72.png',
+    vibrate: [100, 50, 100],
+    data: {
+      url: data.url || '/game.html'
+    },
+    actions: [
+      {
+        action: 'play',
+        title: 'Jouer',
+        icon: 'icons/play-icon.png'
+      },
+      {
+        action: 'dismiss',
+        title: 'Fermer',
+        icon: 'icons/close-icon.png'
+      }
+    ]
+  };
+  
+  event.waitUntil(
+    self.registration.showNotification(data.title || 'DAGA Quiz', options)
+  );
+});
+
+self.addEventListener('notificationclick', event => {
+  event.notification.close();
+  
+  if (event.action === 'play') {
+    event.waitUntil(
+      clients.openWindow(event.notification.data.url)
+    );
+  }
+});
+{
+  "name": "daga-quiz-sql",
+  "version": "1.0.0",
+  "description": "Application de quiz SQL multijoueur",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "build": "electron-builder",
+    "build:windows": "electron-builder --windows",
+    "build:mac": "electron-builder --mac",
+    "build:linux": "electron-builder --linux",
+    "pack": "electron-builder --dir"
+  },
+  "author": "Bienvenu DAGA",
+  "license": "MIT",
+  "devDependencies": {
+    "electron": "^25.0.0",
+    "electron-builder": "^24.0.0"
+  },
+  "build": {
+    "appId": "com.daga.quizsql",
+    "productName": "DAGA Quiz SQL",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "**/*",
+      "!node_modules/**/*"
+    ],
+    "win": {
+      "target": "nsis",
+      "icon": "icons/icon.ico"
+    },
+    "mac": {
+      "target": "dmg",
+      "icon": "icons/icon.icns"
+    },
+    "linux": {
+      "target": "AppImage",
+      "icon": "icons/icon.png"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true
+    }
+  }
+} 
+const { app, BrowserWindow, Menu, Tray, nativeImage } = require('electron');
+const path = require('path');
+
+let mainWindow;
+let tray = null;
+
+function createWindow() {
+  mainWindow = new BrowserWindow({
+    width: 1200,
+    height: 800,
+    minWidth: 800,
+    minHeight: 600,
+    icon: path.join(__dirname, 'icons/icon.png'),
+    webPreferences: {
+      nodeIntegration: false,
+      contextIsolation: true,
+      enableRemoteModule: false,
+      preload: path.join(__dirname, 'preload.js')
+    },
+    frame: true,
+    titleBarStyle: 'hiddenInset',
+    backgroundColor: '#1a2a6c'
+  });
+
+  // Charger le jeu
+  mainWindow.loadFile('index.html');
+  
+  // Ouvrir les DevTools en développement
+  if (process.env.NODE_ENV === 'development') {
+    mainWindow.webContents.openDevTools();
+  }
+  
+  // Gestion de la fermeture
+  mainWindow.on('closed', () => {
+    mainWindow = null;
+  });
+  
+  // Créer le menu
+  createMenu();
+  
+  // Créer la tray icon
+  createTray();
+}
+
+function createMenu() {
+  const template = [
+    {
+      label: 'DAGA',
+      submenu: [
+        {
+          label: 'Nouvelle partie',
+          accelerator: 'CmdOrCtrl+N',
+          click: () => {
+            mainWindow.loadFile('game.html');
+          }
+        },
+        { type: 'separator' },
+        {
+          label: 'Classement',
+          click: () => {
+            mainWindow.webContents.send('show-leaderboard');
+          }
+        },
+        { type: 'separator' },
+        {
+          label: 'Quitter',
+          accelerator: 'CmdOrCtrl+Q',
+          click: () => {
+            app.quit();
+          }
+        }
+      ]
+    },
+    {
+      label: 'Édition',
+      submenu: [
+        { role: 'undo' },
+        { role: 'redo' },
+        { type: 'separator' },
+        { role: 'cut' },
+        { role: 'copy' },
+        { role: 'paste' }
+      ]
+    },
+    {
+      label: 'Affichage',
+      submenu: [
+        { role: 'reload' },
+        { role: 'forcereload' },
+        { role: 'toggledevtools' },
+        { type: 'separator' },
+        { role: 'resetzoom' },
+        { role: 'zoomin' },
+        { role: 'zoomout' },
+        { type: 'separator' },
+        { role: 'togglefullscreen' }
+      ]
+    },
+    {
+      label: 'Aide',
+      submenu: [
+        {
+          label: 'Documentation',
+          click: async () => {
+            const { shell } = require('electron');
+            await shell.openExternal('https://github.com/daga-quiz/docs');
+          }
+        },
+        {
+          label: 'Signaler un bug',
+          click: async () => {
+            const { shell } = require('electron');
+            await shell.openExternal('https://github.com/daga-quiz/issues');
+          }
+        }
+      ]
+    }
+  ];
+  
+  const menu = Menu.buildFromTemplate(template);
+  Menu.setApplicationMenu(menu);
+}
+
+function createTray() {
+  const iconPath = path.join(__dirname, 'icons/tray-icon.png');
+  const trayIcon = nativeImage.createFromPath(iconPath);
+  
+  tray = new Tray(trayIcon.resize({ width: 16, height: 16 }));
+  
+  const contextMenu = Menu.buildFromTemplate([
+    {
+      label: 'Ouvrir DAGA',
+      click: () => {
+        if (mainWindow === null) {
+          createWindow();
+        } else {
+          mainWindow.show();
+        }
+      }
+    },
+    {
+      label: 'Nouvelle partie',
+      click: () => {
+        mainWindow.loadFile('game.html');
+        mainWindow.show();
+      }
+    },
+    { type: 'separator' },
+    {
+      label: 'Quitter',
+      click: () => {
+        app.quit();
+      }
+    }
+  ]);
+  
+  tray.setToolTip('DAGA Quiz SQL');
+  tray.setContextMenu(contextMenu);
+  
+  tray.on('click', () => {
+    if (mainWindow === null) {
+      createWindow();
+    } else {
+      mainWindow.isVisible() ? mainWindow.hide() : mainWindow.show();
+    }
+  });
+}
+
+// Événements de l'application
+app.whenReady().then(createWindow);
+
+app.on('window-all-closed', () => {
+  if (process.platform !== 'darwin') {
+    app.quit();
+  }
+});
+
+app.on('activate', () => {
+  if (mainWindow === null) {
+    createWindow();
+  }
+});
+
+// Empêcher les instances multiples
+const gotTheLock = app.requestSingleInstanceLock();
+
+if (!gotTheLock) {
+  app.quit();
+} else {
+  app.on('second-instance', () => {
+    if (mainWindow) {
+      if (mainWindow.isMinimized()) mainWindow.restore();
+      mainWindow.focus();
+    }
+  });
+} 
+# Installation des dépendances
+npm install
+
+# Build pour Windows
+npm run build:windows
+
+# Build pour Mac
+npm run build:mac
+
+# Build pour Linux
+npm run build:linux
+
+# Build pour toutes les plateformes
+npm run build
