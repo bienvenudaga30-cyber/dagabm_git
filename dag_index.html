@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pixel Forge - Mini Demo</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #1a1a2e;
+            color: #f1f1f1;
+            font-family: 'Courier New', monospace;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .github-banner {
+            background: #24292e;
+            padding: 10px 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border: 1px solid #444;
+        }
+
+        .github-banner a {
+            color: #58a6ff;
+            text-decoration: none;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        h1 {
+            color: #ff6b6b;
+            text-shadow: 0 0 10px rgba(255, 107, 107, 0.5);
+            margin-bottom: 10px;
+        }
+
+        .game-container {
+            display: flex;
+            gap: 20px;
+            max-width: 1000px;
+            width: 100%;
+        }
+
+        .left-panel, .right-panel {
+            background: rgba(0, 0, 0, 0.5);
+            padding: 15px;
+            border-radius: 10px;
+            border: 2px solid #333;
+        }
+
+        .left-panel {
+            flex: 1;
+        }
+
+        .right-panel {
+            width: 250px;
+        }
+
+        .game-canvas {
+            background: #0f3460;
+            border: 3px solid #4ecca3;
+            border-radius: 5px;
+            margin-bottom: 15px;
+            image-rendering: pixelated;
+            image-rendering: crisp-edges;
+        }
+
+        .stats {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 15px;
+        }
+
+        .stat {
+            background: #16213e;
+            padding: 8px 12px;
+            border-radius: 5px;
+            border: 1px solid #4ecca3;
+        }
+
+        .controls {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        button {
+            background: #4ecca3;
+            color: #1a1a2e;
+            border: none;
+            padding: 10px;
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        button:hover {
+            background: #ff6b6b;
+            transform: translateY(-2px);
+        }
+
+        .forge-section {
+            margin-top: 20px;
+        }
+
+        .forge-item {
+            background: #333;
+            padding: 8px;
+            margin: 5px 0;
+            border-radius: 5px;
+            cursor: pointer;
+            border: 1px solid transparent;
+        }
+
+        .forge-item:hover {
+            border-color: #ff6b6b;
+        }
+
+        .inventory {
+            margin-top: 15px;
+        }
+
+        .inventory-item {
+            width: 40px;
+            height: 40px;
+            background: #444;
+            border: 2px solid #4ecca3;
+            border-radius: 5px;
+            display: inline-block;
+            margin: 5px;
+            text-align: center;
+            line-height: 40px;
+        }
+
+        .instructions {
+            background: rgba(0, 0, 0, 0.7);
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 20px;
+            max-width: 1000px;
+            width: 100%;
+        }
+
+        .instructions ul {
+            padding-left: 20px;
+        }
+
+        .instructions li {
+            margin: 5px 0;
+        }
+
+        kbd {
+            background: #333;
+            padding: 2px 5px;
+            border-radius: 3px;
+            border: 1px solid #666;
+        }
+
+        footer {
+            margin-top: 20px;
+            text-align: center;
+            color: #666;
+            font-size: 0.9em;
+        }
+
+        @media (max-width: 768px) {
+            .game-container {
+                flex-direction: column;
+            }
+            .right-panel {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="github-banner">
+        <span>🎮 Pixel Forge Arena - GitHub Project</span>
+        <a href="https://github.com" target="_blank">Voir sur GitHub</a>
+    </div>
+
+    <header>
+        <h1>⚔️ PIXEL FORGE ARENA ⚔️</h1>
+        <p>Crée ton arme - Combats les ennemis - Partage tes créations</p>
+    </header>
+
+    <div class="game-container">
+        <div class="left-panel">
+            <canvas id="gameCanvas" class="game-canvas" width="640" height="480"></canvas>
+            
+            <div class="stats">
+                <div class="stat">❤️ Vie: <span id="health">100</span></div>
+                <div class="stat">🎯 Score: <span id="score">0</span></div>
+                <div class="stat">⚡ Ressources: <span id="resources">50</span></div>
+                <div class="stat">🛡️ Arme: <span id="weapon">Épée Basique</span></div>
+            </div>
+
+            <div class="controls">
+                <button onclick="movePlayer('left')">◀️ Gauche (A)</button>
+                <button onclick="movePlayer('right')">Droite (D) ▶️</button>
+                <button onclick="attack()">⚔️ Attaquer (ESPACE)</button>
+                <button onclick="forgeWeapon()">🔨 Forger Arme (F)</button>
+            </div>
+        </div>
+
+        <div class="right-panel">
+            <h3>🔨 FORGE D'ARMES</h3>
+            <div class="forge-section">
+                <p>Coût: 20 ressources</p>
+                <div class="forge-item" onclick="selectWeapon('sword')">🗡️ Épée Rapide (Dégâts: 15)</div>
+                <div class="forge-item" onclick="selectWeapon('hammer')">🔨 Marteau Lourd (Dégâts: 25)</div>
+                <div class="forge-item" onclick="selectWeapon('bow')">🏹 Arc Long (Dégâts: 20)</div>
+                <div class="forge-item" onclick="selectWeapon('magic')">✨ Baguette Magique (Dégâts: 30)</div>
+            </div>
+
+            <div class="inventory">
+                <h3>🎒 INVENTAIRE</h3>
+                <div id="inventoryContainer">
+                    <div class="inventory-item">🗡️</div>
+                    <div class="inventory-item">🛡️</div>
+                    <div class="inventory-item">💎</div>
+                </div>
+            </div>
+
+            <div style="margin-top: 20px;">
+                <h3>📊 STATISTIQUES</h3>
+                <p>Ennemis vaincus: <span id="enemiesDefeated">0</span></p>
+                <p>Armes forgées: <span id="weaponsForged">1</span></p>
+                <p>Temps: <span id="time">00:00</span></p>
+            </div>
+        </div>
+    </div>
+
+    <div class="instructions">
+        <h3>🎮 COMMENT JOUER</h3>
+        <ul>
+            <li><kbd>A</kbd>/<kbd>D</kbd> : Déplacer le joueur</li>
+            <li><kbd>ESPACE</kbd> : Attaquer</li>
+            <li><kbd>F</kbd> : Forger une nouvelle arme</li>
+            <li>Clique sur une arme dans la forge pour la sélectionner</li>
+            <li>Collecte les ressources (💎) pour forger de meilleures armes</li>
+            <li>Vaincs tous les ennemis pour gagner !</li>
+        </ul>
+        <p><strong>Objectif GitHub :</strong> Ce projet est conçu pour être facilement modifiable et extensible. Ajoute tes propres armes, ennemis ou mécaniques de jeu !</p>
+    </div>
+
+    <footer>
+        Pixel Forge Arena - Démo technique pour GitHub - Code open source
+    </footer>
+
+    <script>
+        // Variables du jeu
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        let player = {
+            x: 100,
+            y: 300,
+            width: 40,
+            height: 60,
+            health: 100,
+            weapon: 'sword',
+            damage: 10
+        };
+
+        let enemies = [];
+        let resources = [];
+        let score = 0;
+        let resourcesCount = 50;
+        let weaponsForged = 1;
+        let enemiesDefeated = 0;
+        let gameTime = 0;
+        let gameInterval;
+
+        // Armes disponibles
+        const weapons = {
+            sword: { name: 'Épée Basique', damage: 10, color: '#4ecca3' },
+            hammer: { name: 'Marteau Lourd', damage: 25, color: '#ff6b6b' },
+            bow: { name: 'Arc Long', damage: 20, color: '#58a6ff' },
+            magic: { name: 'Baguette Magique', damage: 30, color: '#ffd166' }
+        };
+
+        // Initialisation du jeu
+        function initGame() {
+            // Créer quelques ennemis
+            for (let i = 0; i < 5; i++) {
+                enemies.push({
+                    x: 400 + i * 100,
+                    y: 300,
+                    width: 40,
+                    height: 60,
+                    health: 50,
+                    speed: Math.random() * 2 + 1
+                });
+            }
+
+            // Créer des ressources
+            for (let i = 0; i < 8; i++) {
+                resources.push({
+                    x: Math.random() * 600,
+                    y: Math.random() * 400,
+                    width: 20,
+                    height: 20,
+                    collected: false
+                });
+            }
+
+            // Démarrer le timer du jeu
+            gameInterval = setInterval(() => {
+                gameTime++;
+                document.getElementById('time').textContent = 
+                    `${Math.floor(gameTime/60).toString().padStart(2, '0')}:${(gameTime%60).toString().padStart(2, '0')}`;
+            }, 1000);
+
+            // Boucle de jeu
+            setInterval(gameLoop, 1000/60);
+        }
+
+        // Boucle principale du jeu
+        function gameLoop() {
+            // Effacer l'écran
+            ctx.fillStyle = '#0f3460';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Dessiner le sol
+            ctx.fillStyle = '#16213e';
+            ctx.fillRect(0, 350, canvas.width, canvas.height - 350);
+
+            // Dessiner le joueur
+            ctx.fillStyle = weapons[player.weapon].color;
+            ctx.fillRect(player.x, player.y, player.width, player.height);
+            
+            // Dessiner l'arme
+            ctx.fillStyle = '#333';
+            ctx.fillRect(player.x + 30, player.y - 10, 10, 20);
+
+            // Dessiner les ennemis
+            enemies.forEach(enemy => {
+                ctx.fillStyle = '#ff4757';
+                ctx.fillRect(enemy.x, enemy.y, enemy.width, enemy.height);
+                
+                // Barre de vie
+                ctx.fillStyle = '#ff0000';
+                ctx.fillRect(enemy.x, enemy.y - 10, enemy.width, 5);
+                ctx.fillStyle = '#00ff00';
+                ctx.fillRect(enemy.x, enemy.y - 10, (enemy.health / 50) * enemy.width, 5);
+
+                // Déplacer l'ennemi
+                enemy.x -= enemy.speed;
+                if (enemy.x < -40) {
+                    enemy.x = 700;
+                    enemy.y = 200 + Math.random() * 200;
+                }
+            });
+
+            // Dessiner les ressources
+            resources.forEach(resource => {
+                if (!resource.collected) {
+                    ctx.fillStyle = '#ffd166';
+                    ctx.fillRect(resource.x, resource.y, resource.width, resource.height);
+                    
+                    // Animation scintillement
+                    ctx.fillStyle = '#fff';
+                    ctx.fillRect(resource.x + 5, resource.y + 5, 5, 5);
+                }
+            });
+
+            // Vérifier les collisions avec les ressources
+            resources.forEach(resource => {
+                if (!resource.collected && 
+                    player.x < resource.x + resource.width &&
+                    player.x + player.width > resource.x &&
+                    player.y < resource.y + resource.height &&
+                    player.y + player.height > resource.y) {
+                    
+                    resource.collected = true;
+                    resourcesCount += 10;
+                    updateUI();
+                }
+            });
+
+            // Mettre à jour l'UI
+            updateUI();
+        }
+
+        // Mouvement du joueur
+        function movePlayer(direction) {
+            if (direction === 'left' && player.x > 0) {
+                player.x -= 20;
+            } else if (direction === 'right' && player.x < canvas.width - player.width) {
+                player.x += 20;
+            }
+        }
+
+        // Attaquer
+        function attack() {
+            enemies.forEach((enemy, index) => {
+                if (player.x + player.width > enemy.x && 
+                    player.x < enemy.x + enemy.width &&
+                    Math.abs(player.y - enemy.y) < 50) {
+                    
+                    enemy.health -= player.damage;
+                    if (enemy.health <= 0) {
+                        enemies.splice(index, 1);
+                        score += 100;
+                        enemiesDefeated++;
+                        
+                        // Nouvel ennemi
+                        setTimeout(() => {
+                            enemies.push({
+                                x: 700,
+                                y: 200 + Math.random() * 200,
+                                width: 40,
+                                height: 60,
+                                health: 50,
+                                speed: Math.random() * 2 + 1
+                            });
+                        }, 1000);
+                    }
+                }
+            });
+        }
+
+        // Forger une arme
+        function forgeWeapon() {
+            if (resourcesCount >= 20) {
+                resourcesCount -= 20;
+                weaponsForged++;
+                updateUI();
+                alert(`Arme forgée ! Ressources restantes: ${resourcesCount}`);
+            } else {
+                alert("Pas assez de ressources ! Collecte plus de gemmes 💎");
+            }
+        }
+
+        // Sélectionner une arme
+        function selectWeapon(weaponType) {
+            if (resourcesCount >= 20) {
+                player.weapon = weaponType;
+                player.damage = weapons[weaponType].damage;
+                resourcesCount -= 20;
+                weaponsForged++;
+                updateUI();
+                document.getElementById('weapon').textContent = weapons[weaponType].name;
+            }
+        }
+
+        // Mettre à jour l'interface
+        function updateUI() {
+            document.getElementById('health').textContent = player.health;
+            document.getElementById('score').textContent = score;
+            document.getElementById('resources').textContent = resourcesCount;
+            document.getElementById('enemiesDefeated').textContent = enemiesDefeated;
+            document.getElementById('weaponsForged').textContent = weaponsForged;
+        }
+
+        // Contrôles clavier
+        document.addEventListener('keydown', (e) => {
+            switch(e.key.toLowerCase()) {
+                case 'a':
+                    movePlayer('left');
+                    break;
+                case 'd':
+                    movePlayer('right');
+                    break;
+                case ' ':
+                    attack();
+                    break;
+                case 'f':
+                    forgeWeapon();
+                    break;
+            }
+        });
+
+        // Initialiser le jeu
+        window.onload = initGame;
+    </script>
+</body>
+</html>
