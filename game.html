@@ -43,6 +43,31 @@
             margin-bottom: 20px;
         }
         
+        .difficulty-indicator {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-weight: bold;
+            margin-left: 10px;
+            font-size: 0.9rem;
+        }
+        
+        .difficulty-easy {
+            background-color: #2ecc71;
+        }
+        
+        .difficulty-medium {
+            background-color: #f39c12;
+        }
+        
+        .difficulty-hard {
+            background-color: #e74c3c;
+        }
+        
+        .difficulty-expert {
+            background-color: #9b59b6;
+        }
+        
         .game-container {
             display: grid;
             grid-template-columns: 1fr 350px;
@@ -92,13 +117,18 @@
             margin-bottom: 25px;
         }
         
+        .question-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
         .question-counter {
             font-size: 1.3rem;
             background-color: rgba(0, 0, 0, 0.2);
             padding: 8px 15px;
             border-radius: 50px;
-            display: inline-block;
-            margin-bottom: 15px;
         }
         
         .timer {
@@ -362,6 +392,11 @@
                 width: 100%;
                 justify-content: center;
             }
+            
+            .question-header {
+                flex-direction: column;
+                gap: 10px;
+            }
         }
     </style>
 </head>
@@ -377,7 +412,10 @@
             <div class="main-panel">
                 <!-- État du jeu -->
                 <div class="game-state">
-                    <div class="question-counter">Question <span id="currentQuestion">1</span> / <span id="totalQuestions">10</span></div>
+                    <div class="question-header">
+                        <div class="question-counter">Question <span id="currentQuestion">1</span> / <span id="totalQuestions">10</span></div>
+                        <div id="difficultyDisplay" class="difficulty-indicator difficulty-easy">Facile</div>
+                    </div>
                     <div class="timer" id="timer">30s</div>
                     <div id="gameStatus">En attente du début de la partie...</div>
                 </div>
@@ -492,6 +530,243 @@
     </div>
 
     <script>
+        // Base de données de questions SQL avec niveaux de difficulté
+        const questionDatabase = {
+            easy: [
+                {
+                    question: "Quelle commande SQL est utilisée pour récupérer des données d'une base de données?",
+                    code: null,
+                    options: ["GET", "SELECT", "EXTRACT", "QUERY"],
+                    correctAnswer: 1,
+                    points: 100
+                },
+                {
+                    question: "Quelle clause SQL est utilisée pour filtrer les résultats?",
+                    code: null,
+                    options: ["FILTER", "WHERE", "HAVING", "CONDITION"],
+                    correctAnswer: 1,
+                    points: 100
+                },
+                {
+                    question: "Quelle commande est utilisée pour mettre à jour des données dans une table SQL?",
+                    code: null,
+                    options: ["MODIFY", "UPDATE", "CHANGE", "ALTER"],
+                    correctAnswer: 1,
+                    points: 100
+                },
+                {
+                    question: "Quelle commande crée une nouvelle table dans une base de données?",
+                    code: null,
+                    options: ["CREATE TABLE", "ADD TABLE", "INSERT TABLE", "NEW TABLE"],
+                    correctAnswer: 0,
+                    points: 100
+                },
+                {
+                    question: "Quelle commande est utilisée pour supprimer une table?",
+                    code: null,
+                    options: ["REMOVE TABLE", "DELETE TABLE", "DROP TABLE", "ERASE TABLE"],
+                    correctAnswer: 2,
+                    points: 100
+                },
+                {
+                    question: "Comment ajouter une nouvelle ligne dans une table?",
+                    code: null,
+                    options: ["ADD ROW", "INSERT INTO", "CREATE ROW", "NEW ROW"],
+                    correctAnswer: 1,
+                    points: 100
+                },
+                {
+                    question: "Quelle clause est utilisée pour trier les résultats?",
+                    code: null,
+                    options: ["SORT BY", "ORDER BY", "ARRANGE BY", "GROUP BY"],
+                    correctAnswer: 1,
+                    points: 100
+                },
+                {
+                    question: "Quel mot-clé est utilisé pour éliminer les doublons?",
+                    code: null,
+                    options: ["UNIQUE", "DISTINCT", "DIFFERENT", "ONLY"],
+                    correctAnswer: 1,
+                    points: 100
+                }
+            ],
+            medium: [
+                {
+                    question: "Quelle jointure retourne tous les enregistrements des deux tables?",
+                    code: null,
+                    options: ["INNER JOIN", "LEFT JOIN", "RIGHT JOIN", "FULL OUTER JOIN"],
+                    correctAnswer: 3,
+                    points: 150
+                },
+                {
+                    question: "Quelle fonction agrège des valeurs numériques?",
+                    code: null,
+                    options: ["COUNT()", "AVG()", "MAX()", "Toutes ces réponses"],
+                    correctAnswer: 3,
+                    points: 150
+                },
+                {
+                    question: "Que fait la clause GROUP BY?",
+                    code: null,
+                    options: ["Filtre les groupes", "Regroupe les lignes ayant des valeurs communes", "Trie les résultats par groupe", "Combine plusieurs tables"],
+                    correctAnswer: 1,
+                    points: 150
+                },
+                {
+                    question: "Quelle est la différence entre WHERE et HAVING?",
+                    code: null,
+                    options: ["WHERE filtre avant regroupement, HAVING après", "HAVING filtre avant regroupement, WHERE après", "C'est la même chose", "WHERE pour jointures, HAVING pour sous-requêtes"],
+                    correctAnswer: 0,
+                    points: 150
+                },
+                {
+                    question: "Quelle est la sortie de cette requête?",
+                    code: "SELECT COUNT(*) FROM employees WHERE department = 'Sales';",
+                    options: ["Le nombre total d'employés", "Le nombre d'employés dans le département Sales", "La somme des salaires du département Sales", "Une erreur car il manque GROUP BY"],
+                    correctAnswer: 1,
+                    points: 150
+                },
+                {
+                    question: "Que fait cette requête?",
+                    code: "DELETE FROM customers WHERE last_purchase < '2023-01-01';",
+                    options: ["Supprime tous les clients", "Supprime les clients sans achat depuis 2023", "Met à jour la date du dernier achat", "Sélectionne les clients avec achat avant 2023"],
+                    correctAnswer: 1,
+                    points: 150
+                },
+                {
+                    question: "Comment créer un index sur une colonne?",
+                    code: null,
+                    options: ["CREATE INDEX idx_name ON table(column)", "ADD INDEX idx_name ON table(column)", "MAKE INDEX idx_name FOR table(column)", "INDEX CREATE idx_name ON table(column)"],
+                    correctAnswer: 0,
+                    points: 150
+                }
+            ],
+            hard: [
+                {
+                    question: "Quelle requête trouve les employés avec le salaire supérieur à la moyenne de leur département?",
+                    code: null,
+                    options: [
+                        "SELECT * FROM employees WHERE salary > AVG(salary)",
+                        "SELECT * FROM employees e1 WHERE salary > (SELECT AVG(salary) FROM employees e2 WHERE e2.department = e1.department)",
+                        "SELECT * FROM employees GROUP BY department HAVING salary > AVG(salary)",
+                        "SELECT * FROM employees WHERE salary > DEPARTMENT_AVG(salary)"
+                    ],
+                    correctAnswer: 1,
+                    points: 200
+                },
+                {
+                    question: "Que fait cette requête avec une CTE (Common Table Expression)?",
+                    code: "WITH ranked_sales AS (SELECT *, ROW_NUMBER() OVER(PARTITION BY region ORDER BY sales DESC) as rank FROM sales_data) SELECT * FROM ranked_sales WHERE rank = 1;",
+                    options: [
+                        "Sélectionne toutes les ventes",
+                        "Sélectionne les meilleures ventes par région",
+                        "Calcule le total des ventes par région",
+                        "Trie les ventes par ordre décroissant"
+                    ],
+                    correctAnswer: 1,
+                    points: 200
+                },
+                {
+                    question: "Comment optimiser cette requête lente?",
+                    code: "SELECT * FROM orders WHERE YEAR(order_date) = 2023 AND MONTH(order_date) = 1;",
+                    options: [
+                        "Ajouter un index sur order_date",
+                        "Utiliser: WHERE order_date >= '2023-01-01' AND order_date < '2023-02-01'",
+                        "Les deux réponses ci-dessus",
+                        "Remplacer * par les noms de colonnes spécifiques"
+                    ],
+                    correctAnswer: 2,
+                    points: 200
+                },
+                {
+                    question: "Quelle est la différence entre UNION et UNION ALL?",
+                    code: null,
+                    options: [
+                        "UNION élimine les doublons, UNION ALL garde tous les enregistrements",
+                        "UNION ALL élimine les doublons, UNION garde tous les enregistrements",
+                        "UNION trie les résultats, UNION ALL non",
+                        "UNION fonctionne avec JOIN, UNION ALL non"
+                    ],
+                    correctAnswer: 0,
+                    points: 200
+                },
+                {
+                    question: "Comment créer une vue qui se met à jour automatiquement?",
+                    code: null,
+                    options: [
+                        "CREATE VIEW view_name AS SELECT ...",
+                        "CREATE MATERIALIZED VIEW view_name AS SELECT ...",
+                        "CREATE AUTO VIEW view_name AS SELECT ...",
+                        "CREATE DYNAMIC VIEW view_name AS SELECT ..."
+                    ],
+                    correctAnswer: 0,
+                    points: 200
+                }
+            ],
+            expert: [
+                {
+                    question: "Comment optimiser une requête avec plusieurs LEFT JOIN sur de grandes tables?",
+                    code: null,
+                    options: [
+                        "Utiliser INNER JOIN à la place",
+                        "Ajouter des indexes appropriés sur les clés de jointure",
+                        "Diviser la requête en plusieurs sous-requêtes",
+                        "Toutes ces réponses peuvent être correctes selon le contexte"
+                    ],
+                    correctAnswer: 3,
+                    points: 250
+                },
+                {
+                    question: "Que fait cette requête avec une fenêtre (window function)?",
+                    code: "SELECT employee_id, salary, SUM(salary) OVER(PARTITION BY department ORDER BY hire_date ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) as running_total FROM employees;",
+                    options: [
+                        "Calcule le total des salaires par département",
+                        "Calcule le total cumulé des salaires par département ordonné par date d'embauche",
+                        "Trie les employés par salaire",
+                        "Calcule la moyenne des salaires"
+                    ],
+                    correctAnswer: 1,
+                    points: 250
+                },
+                {
+                    question: "Comment gérer les deadlocks dans une base de données transactionnelle?",
+                    code: null,
+                    options: [
+                        "Utiliser des transactions plus courtes",
+                        "Accéder aux tables dans le même ordre",
+                        "Utiliser le niveau d'isolation READ COMMITTED",
+                        "Toutes ces réponses"
+                    ],
+                    correctAnswer: 3,
+                    points: 250
+                },
+                {
+                    question: "Quelle est la différence entre un index cluster et non-cluster?",
+                    code: null,
+                    options: [
+                        "L'index cluster détermine l'ordre physique des données",
+                        "L'index non-cluster est une copie séparée des données",
+                        "On ne peut avoir qu'un seul index cluster par table",
+                        "Toutes ces réponses"
+                    ],
+                    correctAnswer: 3,
+                    points: 250
+                },
+                {
+                    question: "Comment implémenter le pattern soft delete avec contrainte d'unicité?",
+                    code: null,
+                    options: [
+                        "Ajouter une colonne 'deleted' et l'inclure dans la contrainte UNIQUE",
+                        "Utiliser une vue qui filtre les enregistrements supprimés",
+                        "Utiliser une table séparée pour les archives",
+                        "Les trois réponses sont valables selon les besoins"
+                    ],
+                    correctAnswer: 3,
+                    points: 250
+                }
+            ]
+        };
+
         // Données du jeu
         const gameData = {
             playerName: "Joueur 1",
@@ -509,68 +784,14 @@
             gameStarted: false,
             selectedAnswer: null,
             playerAnswers: [],
-            questions: [
-                {
-                    question: "Quelle commande SQL est utilisée pour récupérer des données d'une base de données?",
-                    code: null,
-                    options: ["GET", "SELECT", "EXTRACT", "QUERY"],
-                    correctAnswer: 1
-                },
-                {
-                    question: "Quelle clause SQL est utilisée pour filtrer les résultats?",
-                    code: null,
-                    options: ["FILTER", "WHERE", "HAVING", "CONDITION"],
-                    correctAnswer: 1
-                },
-                {
-                    question: "Quelle est la sortie de cette requête?",
-                    code: "SELECT COUNT(*) FROM employees WHERE department = 'Sales';",
-                    options: ["Le nombre total d'employés", "Le nombre d'employés dans le département Sales", "La somme des salaires du département Sales", "Une erreur car il manque GROUP BY"],
-                    correctAnswer: 1
-                },
-                {
-                    question: "Quelle commande est utilisée pour mettre à jour des données dans une table SQL?",
-                    code: null,
-                    options: ["MODIFY", "UPDATE", "CHANGE", "ALTER"],
-                    correctAnswer: 1
-                },
-                {
-                    question: "Quelle jointure retourne tous les enregistrements de la table gauche et les enregistrements correspondants de la table droite?",
-                    code: null,
-                    options: ["INNER JOIN", "LEFT JOIN", "RIGHT JOIN", "FULL JOIN"],
-                    correctAnswer: 1
-                },
-                {
-                    question: "Quelle fonction agrège des valeurs numériques?",
-                    code: null,
-                    options: ["COUNT()", "AVG()", "MAX()", "Toutes ces réponses"],
-                    correctAnswer: 3
-                },
-                {
-                    question: "Que fait cette requête?",
-                    code: "DELETE FROM customers WHERE last_purchase < '2023-01-01';",
-                    options: ["Supprime tous les clients", "Supprime les clients sans achat depuis 2023", "Met à jour la date du dernier achat", "Sélectionne les clients avec achat avant 2023"],
-                    correctAnswer: 1
-                },
-                {
-                    question: "Quelle clause est utilisée pour trier les résultats?",
-                    code: null,
-                    options: ["SORT BY", "ORDER BY", "ARRANGE BY", "GROUP BY"],
-                    correctAnswer: 1
-                },
-                {
-                    question: "Quelle commande crée une nouvelle table dans une base de données?",
-                    code: null,
-                    options: ["CREATE TABLE", "ADD TABLE", "INSERT TABLE", "NEW TABLE"],
-                    correctAnswer: 0
-                },
-                {
-                    question: "Que fait la clause GROUP BY?",
-                    code: null,
-                    options: ["Filtre les groupes", "Regroupe les lignes ayant des valeurs communes", "Trie les résultats par groupe", "Combine plusieurs tables"],
-                    correctAnswer: 1
-                }
-            ]
+            questions: [],
+            currentDifficulty: 'easy',
+            gameStats: {
+                gamesPlayed: 0,
+                totalScore: 0,
+                bestScore: 0,
+                averageScore: 0
+            }
         };
 
         // Éléments DOM
@@ -595,7 +816,8 @@
             correctAnswers: document.getElementById('correctAnswers'),
             averageTime: document.getElementById('averageTime'),
             speedScore: document.getElementById('speedScore'),
-            finalPosition: document.getElementById('finalPosition')
+            finalPosition: document.getElementById('finalPosition'),
+            difficultyDisplay: document.getElementById('difficultyDisplay')
         };
 
         // Initialisation du jeu
@@ -617,10 +839,58 @@
             elements.nextQuestion.addEventListener('click', nextQuestion);
             elements.playAgain.addEventListener('click', resetGame);
             
+            // Charger les statistiques depuis le localStorage
+            loadGameStats();
+            
+            // Générer des questions aléatoires
+            generateRandomQuestions();
+            
             // Mise à jour de l'affichage initial
             updatePlayersList();
             updateQuestionDisplay();
             elements.totalQuestions.textContent = gameData.totalQuestions;
+        }
+
+        // Générer des questions aléatoires avec progression de difficulté
+        function generateRandomQuestions() {
+            gameData.questions = [];
+            const difficultyDistribution = [
+                ...Array(4).fill('easy'),    // 4 questions faciles
+                ...Array(3).fill('medium'),  // 3 questions moyennes
+                ...Array(2).fill('hard'),    // 2 questions difficiles
+                ...Array(1).fill('expert')   // 1 question experte
+            ];
+            
+            difficultyDistribution.forEach(difficulty => {
+                const questions = questionDatabase[difficulty];
+                if (questions && questions.length > 0) {
+                    // Sélectionner une question aléatoire non utilisée
+                    const availableQuestions = questions.filter(q => 
+                        !gameData.questions.some(existing => existing.question === q.question)
+                    );
+                    
+                    if (availableQuestions.length > 0) {
+                        const randomIndex = Math.floor(Math.random() * availableQuestions.length);
+                        gameData.questions.push(availableQuestions[randomIndex]);
+                    } else {
+                        // Si toutes les questions ont été utilisées, prendre une aléatoire
+                        const randomIndex = Math.floor(Math.random() * questions.length);
+                        gameData.questions.push(questions[randomIndex]);
+                    }
+                }
+            });
+            
+            // Mélanger les questions pour éviter un ordre prévisible
+            shuffleArray(gameData.questions);
+        }
+
+        // Fonction pour mélanger un tableau
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
         }
 
         // Sauvegarde de la configuration du joueur
@@ -653,6 +923,9 @@
             gameData.currentQuestionIndex = 0;
             gameData.playerAnswers = [];
             
+            // Générer de nouvelles questions pour chaque partie
+            generateRandomQuestions();
+            
             elements.startGame.disabled = true;
             elements.submitAnswer.disabled = false;
             elements.nextQuestion.disabled = true;
@@ -671,6 +944,9 @@
         // Chargement d'une question
         function loadQuestion(index) {
             const question = gameData.questions[index];
+            
+            // Déterminer la difficulté pour l'affichage
+            updateDifficultyDisplay(question);
             
             // Mettre à jour l'affichage de la question
             elements.currentQuestion.textContent = index + 1;
@@ -701,6 +977,26 @@
             // Réinitialiser le timer
             gameData.timeLeft = gameData.timePerQuestion;
             elements.timer.textContent = `${gameData.timeLeft}s`;
+        }
+
+        // Mettre à jour l'affichage de la difficulté
+        function updateDifficultyDisplay(question) {
+            const difficultyClassMap = {
+                100: 'difficulty-easy',
+                150: 'difficulty-medium', 
+                200: 'difficulty-hard',
+                250: 'difficulty-expert'
+            };
+            
+            const difficultyTextMap = {
+                100: 'Facile',
+                150: 'Moyen',
+                200: 'Difficile',
+                250: 'Expert'
+            };
+            
+            elements.difficultyDisplay.textContent = difficultyTextMap[question.points] || 'Facile';
+            elements.difficultyDisplay.className = `difficulty-indicator ${difficultyClassMap[question.points] || 'difficulty-easy'}`;
         }
 
         // Sélection d'une réponse
@@ -739,7 +1035,7 @@
                 selectedAnswer: gameData.selectedAnswer,
                 isCorrect: isCorrect,
                 timeUsed: timeUsed,
-                points: calculatePoints(isCorrect, timeUsed)
+                points: calculatePoints(isCorrect, timeUsed, question.points)
             });
             
             // Mettre à jour le score du joueur
@@ -768,16 +1064,20 @@
             }
         }
 
-        // Calcul des points
-        function calculatePoints(isCorrect, timeUsed) {
+        // Calcul des points avec bonus de difficulté
+        function calculatePoints(isCorrect, timeUsed, basePoints) {
             if (!isCorrect) return 0;
             
-            // Base points pour une réponse correcte
-            let points = 100;
+            let points = basePoints;
             
             // Bonus pour la rapidité (max 50 points)
             const timeBonus = Math.max(0, 50 - Math.floor(timeUsed / gameData.timePerQuestion * 50));
             points += timeBonus;
+            
+            // Bonus pour les questions difficiles
+            if (basePoints >= 200) {
+                points += 20; // Bonus supplémentaire pour les questions difficiles
+            }
             
             return points;
         }
@@ -834,6 +1134,7 @@
                     
                     // Si le joueur n'a pas répondu, considérer comme incorrect
                     if (gameData.selectedAnswer === null) {
+                        const question = gameData.questions[gameData.currentQuestionIndex];
                         gameData.playerAnswers.push({
                             questionIndex: gameData.currentQuestionIndex,
                             selectedAnswer: null,
@@ -843,7 +1144,6 @@
                         });
                         
                         // Afficher la bonne réponse
-                        const question = gameData.questions[gameData.currentQuestionIndex];
                         highlightCorrectAnswer(question.correctAnswer);
                         
                         // Désactiver le bouton de soumission
@@ -864,13 +1164,24 @@
             clearInterval(gameData.timer);
             
             gameData.gameStarted = false;
+            gameData.gameStats.gamesPlayed++;
             
             // Calculer les résultats
             const correctAnswers = gameData.playerAnswers.filter(a => a.isCorrect).length;
-            const totalTime = gameData.playerAnswers.reduce((sum, a) => sum + a.timeUsed, 0);
+            const totalTime = gameData.playerAnswers.filter(a => a.isCorrect).reduce((sum, a) => sum + a.timeUsed, 0);
             const averageTime = correctAnswers > 0 ? Math.round(totalTime / correctAnswers) : 0;
             const speedScore = gameData.playerAnswers.reduce((sum, a) => sum + (a.isCorrect ? (gameData.timePerQuestion - a.timeUsed) : 0), 0);
             const totalScore = gameData.playerAnswers.reduce((sum, a) => sum + a.points, 0);
+            
+            // Mettre à jour les statistiques
+            gameData.gameStats.totalScore += totalScore;
+            gameData.gameStats.averageScore = Math.round(gameData.gameStats.totalScore / gameData.gameStats.gamesPlayed);
+            if (totalScore > gameData.gameStats.bestScore) {
+                gameData.gameStats.bestScore = totalScore;
+            }
+            
+            // Sauvegarder les statistiques
+            saveGameStats();
             
             // Mettre à jour l'affichage des résultats
             elements.finalScore.textContent = `${totalScore} pts`;
@@ -886,8 +1197,8 @@
             // Afficher le panneau des résultats
             elements.resultsPanel.classList.remove('hidden');
             
-            // Mettre à jour le statut
-            elements.gameStatus.textContent = "Jeu terminé! Consultez vos résultats.";
+            // Mettre à jour le statut avec les statistiques
+            elements.gameStatus.textContent = `Jeu terminé! Meilleur score: ${gameData.gameStats.bestScore} pts | Moyenne: ${gameData.gameStats.averageScore} pts`;
             
             // Désactiver les boutons
             elements.submitAnswer.disabled = true;
@@ -908,6 +1219,9 @@
                 player.score = 0;
             });
             
+            // Générer de nouvelles questions aléatoires
+            generateRandomQuestions();
+            
             // Réinitialiser l'affichage
             updateQuestionDisplay();
             updatePlayersList();
@@ -919,7 +1233,7 @@
             elements.startGame.disabled = false;
             
             // Mettre à jour le statut
-            elements.gameStatus.textContent = "Prêt pour une nouvelle partie!";
+            elements.gameStatus.textContent = `Prêt pour une nouvelle partie! Parties jouées: ${gameData.gameStats.gamesPlayed}`;
             elements.timer.textContent = `${gameData.timeLeft}s`;
         }
 
@@ -928,6 +1242,8 @@
             elements.currentQuestion.textContent = 1;
             elements.questionText.textContent = "Le jeu va commencer dès que vous cliquerez sur 'Démarrer la partie'. Préparez-vous à répondre à des questions sur SQL!";
             elements.codeSnippet.classList.add('hidden');
+            elements.difficultyDisplay.textContent = "Facile";
+            elements.difficultyDisplay.className = "difficulty-indicator difficulty-easy";
             
             // Réinitialiser les options de réponse
             elements.answerOptions.innerHTML = '';
@@ -973,14 +1289,18 @@
                 
                 setTimeout(() => {
                     if (gameData.gameStarted && gameData.currentQuestionIndex < gameData.totalQuestions) {
-                        // Donner une réponse aléatoire (avec une chance de 70% d'être correcte)
-                        const isCorrect = Math.random() > 0.3;
+                        // Donner une réponse aléatoire avec probabilité ajustée selon la difficulté
                         const question = gameData.questions[gameData.currentQuestionIndex];
+                        const basePoints = question.points;
+                        const difficultyFactor = basePoints / 100; // 1 pour facile, 2.5 pour expert
+                        const correctProbability = Math.max(0.3, 0.7 / difficultyFactor); // Moins de chances de réussir les questions difficiles
+                        
+                        const isCorrect = Math.random() < correctProbability;
                         const answerIndex = isCorrect ? question.correctAnswer : Math.floor(Math.random() * question.options.length);
-                        const timeUsed = Math.floor(Math.random() * gameData.timePerQuestion);
+                        const timeUsed = Math.floor(Math.random() * gameData.timePerQuestion * 0.8); // Les autres joueurs sont généralement plus lents
                         
                         // Ajouter des points aléatoires
-                        player.score += calculatePoints(isCorrect, timeUsed);
+                        player.score += calculatePoints(isCorrect, timeUsed, question.points);
                         
                         // Mettre à jour l'affichage
                         updatePlayersList();
@@ -991,6 +1311,19 @@
             // Continuer la simulation si le jeu est toujours en cours
             if (gameData.gameStarted) {
                 setTimeout(simulateOtherPlayers, 10000);
+            }
+        }
+
+        // Sauvegarder les statistiques dans localStorage
+        function saveGameStats() {
+            localStorage.setItem('sqlQuizStats', JSON.stringify(gameData.gameStats));
+        }
+
+        // Charger les statistiques depuis localStorage
+        function loadGameStats() {
+            const savedStats = localStorage.getItem('sqlQuizStats');
+            if (savedStats) {
+                gameData.gameStats = JSON.parse(savedStats);
             }
         }
 
