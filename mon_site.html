@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mon Premier Site</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        header {
+            background-color: #4CAF50;
+            color: white;
+            padding: 20px;
+            text-align: center;
+            border-radius: 8px;
+        }
+        nav {
+            margin: 20px 0;
+            padding: 10px;
+            background-color: #333;
+            border-radius: 5px;
+        }
+        nav a {
+            color: white;
+            text-decoration: none;
+            margin-right: 15px;
+            padding: 5px 10px;
+        }
+        section {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        footer {
+            text-align: center;
+            margin-top: 30px;
+            padding: 10px;
+            color: #666;
+        }
+        .bouton-contact {
+        display: inline-block;
+        background-color: #4CAF50; 
+        color: white;
+        padding: 12px 25px;
+        text-decoration: none;
+        border-radius: 25px; 
+        font-weight: bold;
+        transition: background-color 0.3s;
+        margin-top: 10px;
+    }
+
+    .bouton-contact:hover {
+        background-color: #45a049; 
+        color: white;
+    }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Bienvenue sur mon site</h1>
+        <p>Apprenez le HTML facilement</p>
+    </header>
+    
+    <nav>
+        <a href="#accueil">Accueil</a>
+        <a href="#about">À propos</a>
+        <a href="#contact">Contact</a>
+    </nav>
+    
+    <section id="accueil">
+        <h2>Pourquoi apprendre le HTML ?</h2>
+        <p>Le HTML est la base de tous les sites web. C'est un langage simple mais puissant qui vous permet de créer le contenu de vos pages.</p>
+        
+        <h3>Concepts clés :</h3>
+        <ul>
+            <li>Les balises structurent votre contenu</li>
+            <li>Les attributs donnent des informations supplémentaires</li>
+            <li>L'imbrication organise les éléments</li>
+        </ul>
+        
+        <p>Voici un lien utile : <a href="https://developer.mozilla.org/fr/docs/Web/HTML" target="_blank">Documentation MDN HTML</a></p>
+        
+        <img src="https://via.placeholder.com/400x200.png?text=Image+Exemple" alt="Exemple d'image" style="width:100%; max-width:400px;">
+    </section>
+    
+    <section id="about">
+        <h2>À propos de ce guide</h2>
+        <p>Ce guide est conçu pour les <strong>débutants complets</strong>. Nous allons progresser étape par étape.</p>
+        
+        <h3>Prochaines étapes :</h3>
+        <ol>
+            <li>Maîtriser les balises de base</li>
+            <li>Apprendre à créer des formulaires</li>
+            <li>Découvrir les tableaux</li>
+            <li>Comprendre la sémantique HTML5</li>
+        </ol>
+    </section>
+    <section id="Contact">
+      <h2>Me contacter</h2>
+      <p>Vous avez une question ou un projet ? N'hésitez pas à m'envoyer un message !</p>
+      <a href="mailto:bienvenudaga30@gmail.com" class="bouton-contact">Envoyer un email</a>
+    </section>
+    
+    <footer>
+        <p>© 2026 - Mon Cours HTML pour Débutants</p>
+        <p>Créé avec enthousiasme pour les nouveaux codeurs, par Bienvenu DAGA</p>
+    </footer>
+</body>
+</html>
